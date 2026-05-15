@@ -1,0 +1,44 @@
+{% extends "assets/base.html" %}
+
+{% block title %}Asset #{{ asset.id }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    main {
+        background: white;
+        border: 1px solid #ddd;
+    }
+
+    dt {
+        font-weight: bold;
+        margin-top: 12px;
+    }
+
+    dd {
+        margin-left: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <h1>{{ asset.name }}</h1>
+    <dl>
+        <dt>Type</dt>
+        <dd>{{ asset.get_asset_type_display }}</dd>
+
+        <dt>Category</dt>
+        <dd>{{ asset.category }}</dd>
+
+        <dt>Cost</dt>
+        <dd>{{ asset.cost }}</dd>
+
+        <dt>Quantity</dt>
+        <dd>{{ asset.quantity }}</dd>
+
+        <dt>Status</dt>
+        <dd>{{ asset.status }}</dd>
+
+        <dt>Log Details</dt>
+        <dd>{{ asset.log_details|default:"—" }}</dd>
+    </dl>
+{% endblock %}

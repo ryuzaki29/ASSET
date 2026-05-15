@@ -1,0 +1,52 @@
+{% extends "assets/base.html" %}
+
+{% block title %}Assets{% endblock %}
+
+{% block extra_style %}
+<style>
+    main {
+        padding: 0 16px;
+    }
+
+    ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    li {
+        background: white;
+        margin-bottom: 12px;
+        padding: 16px;
+        border: 1px solid #ddd;
+    }
+
+    .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pagination a {
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <h1>Assets</h1>
+
+    {% if assets %}
+    <ul>
+        {% for asset in assets %}
+        <li>
+            <a href="{% url 'assets:asset_detail' asset.id %}">{{ asset.name }}</a>
+            <p>Type: {{ asset.get_asset_type_display }} | Status: {{ asset.status }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        <p>No assets yet.</p>
+    {% endif %}
+{% endblock %}
