@@ -52,6 +52,16 @@ class SystemConfig(models.Model):
         null=True,
         help_text='Hero section background image (optional, will override background color)'
     )
+    metrics_section_title = models.CharField(
+        max_length=200,
+        default='Key Metrics',
+        help_text='Title for the Key Metrics section on homepage'
+    )
+    recent_assets_section_title = models.CharField(
+        max_length=200,
+        default='Recent Assets',
+        help_text='Title for the Recent Assets section on homepage'
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

@@ -42,6 +42,8 @@ def index(request):
             'hero_image': system_config.hero_image,
             'hero_background_color': system_config.hero_background_color,
             'hero_background_image': system_config.hero_background_image,
+            'metrics_section_title': system_config.metrics_section_title,
+            'recent_assets_section_title': system_config.recent_assets_section_title,
         }
     else:
         # Fallback to default values if no config exists
@@ -62,6 +64,8 @@ def index(request):
             'hero_image': None,
             'hero_background_color': '#8a1538',
             'hero_background_image': None,
+            'metrics_section_title': 'Key Metrics',
+            'recent_assets_section_title': 'Recent Assets',
         }
     
     # Get active features for 'Why Choose Our System' section
