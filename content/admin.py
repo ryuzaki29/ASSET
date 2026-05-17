@@ -14,6 +14,10 @@ class SystemConfigAdmin(admin.ModelAdmin):
             'fields': ('description', 'features'),
             'description': 'Manage the homepage content'
         }),
+        ('Hero Section', {
+            'fields': ('hero_title', 'hero_subtitle', 'hero_image'),
+            'description': 'Customize the hero section on homepage'
+        }),
         ('Metadata', {
             'fields': ('updated_at',),
             'classes': ('collapse',)

@@ -26,6 +26,21 @@ class SystemConfig(models.Model):
         default='2026',
         help_text='Year or date founded'
     )
+    hero_title = models.CharField(
+        max_length=200,
+        default='Asset Management that makes a difference',
+        help_text='Main headline for hero section'
+    )
+    hero_subtitle = models.TextField(
+        default='Streamline your asset tracking, enhance inventory control, and maximize operational efficiency with our comprehensive platform designed for modern businesses.',
+        help_text='Subtitle/description for hero section'
+    )
+    hero_image = models.ImageField(
+        upload_to='hero/',
+        blank=True,
+        null=True,
+        help_text='Hero section image displayed on homepage (right side box)'
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

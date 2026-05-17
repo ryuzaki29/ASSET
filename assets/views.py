@@ -37,6 +37,9 @@ def index(request):
             'description': system_config.description,
             'features': system_config.features.split('\n'),
             'founded': system_config.founded,
+            'hero_title': system_config.hero_title,
+            'hero_subtitle': system_config.hero_subtitle,
+            'hero_image': system_config.hero_image,
         }
     else:
         # Fallback to default values if no config exists
@@ -52,6 +55,9 @@ def index(request):
                 'Admin dashboard'
             ],
             'founded': '2026',
+            'hero_title': 'Asset Management that makes a difference',
+            'hero_subtitle': 'Streamline your asset tracking, enhance inventory control, and maximize operational efficiency with our comprehensive platform designed for modern businesses.',
+            'hero_image': None,
         }
     
     context = {

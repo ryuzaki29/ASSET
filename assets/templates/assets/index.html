@@ -429,27 +429,20 @@
     <div class="hero-section">
         <div class="hero-container">
             <div class="hero-content">
-                <h1>Asset Management that makes a difference</h1>
-                <p>Streamline your asset tracking, enhance inventory control, and maximize operational efficiency with our comprehensive platform designed for modern businesses.</p>
+                <h1>{{ about.hero_title }}</h1>
+                <p>{{ about.hero_subtitle }}</p>
                 
-                <div class="hero-stats">
-                    <div class="hero-stat">
-                        <div class="hero-stat-number">{{ total_assets }}</div>
-                        <div class="hero-stat-label">Assets Managed</div>
-                    </div>
-                    <div class="hero-stat">
-                        <div class="hero-stat-number">₱{{ total_value|floatformat:0 }}</div>
-                        <div class="hero-stat-label">Total Value</div>
-                    </div>
-                </div>
-
                 <a href="{% url 'assets:asset_list' %}" class="btn-explore">Explore Assets →</a>
             </div>
 
             <div class="hero-image">
-                <div class="hero-image-placeholder">
-                    <i class="bi bi-box-seam"></i>
-                </div>
+                {% if about.hero_image %}
+                    <img src="{{ about.hero_image.url }}" alt="Hero Image" style="width: 100%; height: 300px; object-fit: cover; border-radius: 20px;">
+                {% else %}
+                    <div class="hero-image-placeholder">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
