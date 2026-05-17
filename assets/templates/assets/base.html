@@ -54,6 +54,9 @@
         <a href="{% url 'assets:asset_list' %}">Assets</a>
         <a href="{% url 'assets:user_list' %}">Users</a>
         {% if user.is_authenticated %}
+            {% if user.is_staff %}
+                <a href="{% url 'admin:index' %}">Admin</a>
+            {% endif %}
             <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
                 <button type="submit">Logout</button>
