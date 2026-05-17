@@ -4,7 +4,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.db.models import Sum, Q
 
-from .models import Asset, SystemConfig
+from .models import Asset
+from content.models import SystemConfig
 
 
 def landing(request):
