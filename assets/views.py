@@ -119,3 +119,9 @@ def user_list(request):
         "staff_users": staff_users,
     }
     return render(request, "assets/user_list.html", context)
+
+
+def user_detail(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    context = {"user": user}
+    return render(request, "assets/user_detail.html", context)

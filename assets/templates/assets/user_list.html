@@ -349,10 +349,12 @@
             </thead>
             <tbody>
                 {% for user in users %}
-                <tr>
+                <tr style="cursor: pointer;" onclick="window.location='{% url 'assets:user_detail' user.id %}'">
                     <td>
-                        <div class="user-name">{{ user.first_name|default:user.username }}</div>
-                        <div class="user-email">{{ user.email }}</div>
+                        <a href="{% url 'assets:user_detail' user.id %}" style="text-decoration: none; color: inherit;">
+                            <div class="user-name">{{ user.first_name|default:user.username }}</div>
+                            <div class="user-email">{{ user.email }}</div>
+                        </a>
                     </td>
                     <td>@{{ user.username }}</td>
                     <td>

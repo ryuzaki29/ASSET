@@ -9,4 +9,5 @@ urlpatterns = [
     path("asset/<int:asset_id>/", views.asset_detail, name="asset_detail"),
     path("list/", views.asset_list, name="asset_list"),
     path("users/", views.user_list, name="user_list"),
+    path("user/<int:user_id>/", views.user_detail, name="user_detail"),
 ]
