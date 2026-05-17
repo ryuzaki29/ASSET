@@ -41,6 +41,17 @@ class SystemConfig(models.Model):
         null=True,
         help_text='Hero section image displayed on homepage (right side box)'
     )
+    hero_background_color = models.CharField(
+        max_length=7,
+        default='#8a1538',
+        help_text='Hero section background color (hex code, e.g., #8a1538)'
+    )
+    hero_background_image = models.ImageField(
+        upload_to='hero/backgrounds/',
+        blank=True,
+        null=True,
+        help_text='Hero section background image (optional, will override background color)'
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

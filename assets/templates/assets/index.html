@@ -19,10 +19,12 @@
 
     /* Hero Section */
     .hero-section {
-        background: linear-gradient(135deg, #8a1538 0%, #c41e3a 100%);
         color: white;
         padding: 60px 20px;
         margin-bottom: 40px;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
     }
 
     .hero-container {
@@ -426,7 +428,7 @@
 
 {% block content %}
     <!-- Hero Section -->
-    <div class="hero-section">
+    <div class="hero-section" style="{% if about.hero_background_image %}background-image: url('{{ about.hero_background_image.url }}');{% else %}background-color: {{ about.hero_background_color }};{% endif %}">
         <div class="hero-container">
             <div class="hero-content">
                 <h1>{{ about.hero_title }}</h1>

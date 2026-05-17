@@ -15,7 +15,7 @@ class SystemConfigAdmin(admin.ModelAdmin):
             'description': 'Manage the homepage content'
         }),
         ('Hero Section', {
-            'fields': ('hero_title', 'hero_subtitle', 'hero_image'),
+            'fields': ('hero_title', 'hero_subtitle', 'hero_image', 'hero_background_color', 'hero_background_image'),
             'description': 'Customize the hero section on homepage'
         }),
         ('Metadata', {

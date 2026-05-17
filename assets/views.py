@@ -40,6 +40,8 @@ def index(request):
             'hero_title': system_config.hero_title,
             'hero_subtitle': system_config.hero_subtitle,
             'hero_image': system_config.hero_image,
+            'hero_background_color': system_config.hero_background_color,
+            'hero_background_image': system_config.hero_background_image,
         }
     else:
         # Fallback to default values if no config exists
@@ -58,6 +60,8 @@ def index(request):
             'hero_title': 'Asset Management that makes a difference',
             'hero_subtitle': 'Streamline your asset tracking, enhance inventory control, and maximize operational efficiency with our comprehensive platform designed for modern businesses.',
             'hero_image': None,
+            'hero_background_color': '#8a1538',
+            'hero_background_image': None,
         }
     
     # Get active features for 'Why Choose Our System' section
