@@ -85,8 +85,19 @@ def index(request):
 
 
 def asset_list(request):
-    assets = Asset.objects.all()
-    context = {"assets": assets}
+    assets = Asset.objects.all().order_by('-created_at')
+    total_assets = Asset.objects.count()
+    equipment_count = Asset.objects.filter(asset_type='equipment').count()
+    consumable_count = Asset.objects.filter(asset_type='consumable').count()
+    total_value = Asset.objects.aggregate(Sum('cost'))['cost__sum'] or 0
+    
+    context = {
+        "assets": assets,
+        "total_assets": total_assets,
+        "equipment_count": equipment_count,
+        "consumable_count": consumable_count,
+        "total_value": total_value,
+    }
     return render(request, "assets/order_list.html", context)
 
 def asset_detail(request, asset_id):
@@ -96,4 +107,15 @@ def asset_detail(request, asset_id):
 
 
 def user_list(request):
-    return render(request, "assets/user_list.html")
+    users = User.objects.all().order_by('-date_joined')
+    total_users = User.objects.count()
+    active_users = User.objects.filter(is_active=True).count()
+    staff_users = User.objects.filter(is_staff=True).count()
+    
+    context = {
+        "users": users,
+        "total_users": total_users,
+        "active_users": active_users,
+        "staff_users": staff_users,
+    }
+    return render(request, "assets/user_list.html", context)
