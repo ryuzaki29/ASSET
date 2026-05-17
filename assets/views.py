@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.db.models import Sum, Q
 
 from .models import Asset
-from content.models import SystemConfig
+from content.models import SystemConfig, Feature
 
 
 def landing(request):
@@ -60,6 +60,9 @@ def index(request):
             'hero_image': None,
         }
     
+    # Get active features for 'Why Choose Our System' section
+    system_features = Feature.objects.filter(is_active=True).order_by('order')
+    
     context = {
         'total_assets': total_assets,
         'total_users': total_users,
@@ -68,6 +71,7 @@ def index(request):
         'total_value': total_value,
         'recent_assets': recent_assets,
         'about': about_data,
+        'system_features': system_features,
     }
     return render(request, "assets/index.html", context)
 

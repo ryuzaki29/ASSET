@@ -49,3 +49,46 @@ class SystemConfig(models.Model):
     class Meta:
         verbose_name = "System Configuration"
         verbose_name_plural = "System Configuration"
+
+
+class Feature(models.Model):
+    """Configurable features for 'Why Choose Our System' section."""
+    ICON_CHOICES = [
+        ('bi-lightning', 'Lightning (Real-time)'),
+        ('bi-shield-check', 'Shield (Security)'),
+        ('bi-graph-up', 'Graph (Analytics)'),
+        ('bi-person-check', 'Person (User)'),
+        ('bi-layers', 'Layers (Organization)'),
+        ('bi-headset', 'Headset (Support)'),
+        ('bi-gear', 'Gear (Settings)'),
+        ('bi-lock', 'Lock (Protection)'),
+        ('bi-database', 'Database (Data)'),
+        ('bi-speedometer', 'Speedometer (Performance)'),
+    ]
+    
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    icon = models.CharField(
+        max_length=50,
+        choices=ICON_CHOICES,
+        default='bi-lightning',
+        help_text='Icon from Bootstrap Icons'
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        help_text='Order in which features appear (0-5)'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text='Show/hide this feature'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Feature"
+        verbose_name_plural = "Features"
+        ordering = ['order']

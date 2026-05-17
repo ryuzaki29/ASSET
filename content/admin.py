@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import SystemConfig
+from .models import SystemConfig, Feature
 
 
 @admin.register(SystemConfig)
@@ -33,3 +33,30 @@ class SystemConfigAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # Prevent deletion of the configuration
         return False
+
+
+@admin.register(Feature)
+class FeatureAdmin(admin.ModelAdmin):
+    list_display = ('order', 'title', 'icon', 'is_active', 'updated_at')
+    list_display_links = ('title',)
+    list_filter = ('is_active', 'updated_at')
+    search_fields = ('title', 'description')
+    list_editable = ('is_active', 'order')
+    ordering = ('order',)
+    
+    fieldsets = (
+        ('Feature Information', {
+            'fields': ('title', 'description', 'icon'),
+            'description': 'Configure feature display'
+        }),
+        ('Display Settings', {
+            'fields': ('order', 'is_active'),
+            'description': 'Control feature visibility and order'
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ('created_at', 'updated_at')

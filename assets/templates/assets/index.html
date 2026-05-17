@@ -490,41 +490,13 @@
             </div>
 
             <div class="features-grid">
+                {% for feature in system_features %}
                 <div class="feature-item">
-                    <div class="feature-icon"><i class="bi bi-lightning"></i></div>
-                    <h4>Real-time Tracking</h4>
-                    <p>Monitor your assets in real-time with live updates and instant notifications</p>
+                    <div class="feature-icon"><i class="bi {{ feature.icon }}"></i></div>
+                    <h4>{{ feature.title }}</h4>
+                    <p>{{ feature.description }}</p>
                 </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
-                    <h4>Secure Management</h4>
-                    <p>Enterprise-grade security with role-based access control and audit logs</p>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="bi bi-graph-up"></i></div>
-                    <h4>Analytics & Reports</h4>
-                    <p>Comprehensive insights with detailed reports and data visualization</p>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="bi bi-person-check"></i></div>
-                    <h4>User Management</h4>
-                    <p>Easy user administration with flexible permission settings</p>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="bi bi-layers"></i></div>
-                    <h4>Asset Categorization</h4>
-                    <p>Organize assets by type, category, and status for better control</p>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="bi bi-headset"></i></div>
-                    <h4>24/7 Support</h4>
-                    <p>Dedicated support team ready to help you succeed</p>
-                </div>
+                {% endfor %}
             </div>
         </div>
 
