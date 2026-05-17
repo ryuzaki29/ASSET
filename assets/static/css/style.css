@@ -1,0 +1,181 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html{
+    font-family: "Montserrat", Arial, sans-serif;  
+}
+
+body {
+    font-family: "Montserrat", Arial, sans-serif;
+}
+
+.landing-bg-overlay{
+    background-image: url("../images/bg_image.webp");
+    background-size: cover;
+    background-position: center;
+}
+
+body.landing-bg-overlay::after{
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background: rgba(0,0,0,0.35);
+
+    z-index: -1;
+}
+
+.card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 48px 40px;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 12px;
+}
+
+p {
+    color: #555;
+    margin-bottom: 32px;
+}
+
+.btn-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 32px;
+    background: #222;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.btn-primary{
+    background-color:#8a1538;
+    color:white;
+    box-shadow: none !important;
+    outline: none !important;
+    border-color: transparent;
+}
+
+.btn-primary:hover{
+    background-color:#620D26!important;
+    box-shadow: none !important;
+    outline: none !important;
+    border-color: transparent;
+}
+
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary:focus-visible {
+    box-shadow: none !important;
+    outline: none !important;
+    border-color: transparent;
+}
+
+.btn:hover {
+    background: #444;
+}
+
+.btn-outline {
+    background: white;
+    color: #222;
+    border: 1px solid #222;
+}
+
+.btn-outline:hover {
+    background: #f0f0f0;
+}
+
+
+/***** Login Form CSS ******/
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 16px;
+    color: #555;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.registration-link{
+    margin-top: 16px;
+    color: #555;
+    text-decoration: none;
+    font-size: 0.9rem;   
+}
+.pwreset-link{
+    margin-top: 16px;
+    color: #555;
+    text-decoration: none;
+    font-size: 0.9rem;    
+}
+
+.back-link:hover, .registration-link:hover, .pwreset-link:hover{
+    color:#8a1538;
+}
+
+.login-body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    color: #222;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    margin-bottom: 16px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #222;
+}
+
+.errors {
+    background: #fff0f0;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    color: #721c24;
+    font-size: 0.9rem;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: #222;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+}

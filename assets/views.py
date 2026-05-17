@@ -1,4 +1,6 @@
 from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse
+from django.contrib.auth.forms import UserCreationForm
 
 from .models import Asset
 
@@ -6,6 +8,10 @@ from .models import Asset
 def landing(request):
     return render(request, "assets/landing.html")
 
+# Added Registration Form
+def register_view(request):
+    form = UserCreationForm()
+    return render(request, "registration/user_registration.html", {"form":form})
 
 def index(request):
     return render(request, "assets/index.html")
