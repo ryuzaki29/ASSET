@@ -22,9 +22,7 @@ body.landing-bg-overlay::after{
     content: "";
     position: absolute;
     inset: 0;
-
     background: rgba(0,0,0,0.35);
-
     z-index: -1;
 }
 
@@ -95,6 +93,31 @@ p {
     background: white;
     color: #222;
     border: 1px solid #222;
+}
+
+.btn-nav{
+    background-color:#8a1538!important;
+    box-shadow: none !important;
+    outline: none !important;
+    color:white;
+    border: 1px solid white!important;
+}
+
+.btn-nav:hover{
+    background-color:#620D26!important;
+    box-shadow: none !important;
+    outline: none !important;
+    color:white;
+    border: 1px solid #8a1538!important;
+}
+
+.btn-nav:focus,
+.btn-nav:active,
+.btn-nav:focus-visible {
+    box-shadow: none !important;
+    outline: none !important;
+    color: white;
+    border: 1px solid #620D26!important;
 }
 
 .btn-outline:hover {
