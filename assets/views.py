@@ -25,7 +25,7 @@ def register_view(request):
                 designation=request.POST.get("designation")
             )
 
-            return redirect("assets:landing.html")
+            return redirect("assets:landing")
 
     return render(request, "users/register.html", {"form": form})
 
