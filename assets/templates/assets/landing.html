@@ -27,10 +27,19 @@
             <a href="{% url 'home' %}" class="btn btn-outline-secondary">
                 Home
             </a>
-    
-            <a href="{% url 'login' %}" class="btn btn-primary">
-                Login
+
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'logout' %}" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">
+                    Logout</i>
+                </button>
+            </form>
+            {% else %}
+            <a class="btn btn-primary" href="{% url 'login' %}">
+                Login</i>
             </a>
+            {% endif %}
         </div>
     </div>
 

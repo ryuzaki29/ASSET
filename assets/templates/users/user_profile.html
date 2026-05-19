@@ -1,0 +1,42 @@
+{% extends "assets/base.html" %}
+
+{% block title %}
+Users
+{% endblock %}
+
+{% block content %}
+
+    <div class="container text-align-left">
+        <div class="border rounded p-3" style="border-color:#cecece;">
+            <h1>User Profile</h1>
+            <hr style="border-color: #c0c0c0;" />
+            
+            <p><strong>Name:</strong> {{ profile_user.first_name }} {{ profile_user.last_name }}</p>
+
+            <p><strong>Designation:</strong>
+                {{ profile_user.profile.designation }}
+            </p>
+
+            <p><strong>Email:</strong> {{ profile_user.email }}</p>
+
+            <p><strong>Contact Number:</strong>
+                {{ profile_user.profile.contact_number }}
+            </p>
+
+            <h2>Inventory Requests</h2>
+            <hr style="border-color: #c0c0c0;" />
+
+            <ul>
+                {% for request in requests %}
+                    <li>
+                        {{ request.asset_name }} - Qty: {{ request.quantity }}
+                    </li>
+                {% empty %}
+                    <li>No requests yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+    </div>
+
+{% endblock %}
