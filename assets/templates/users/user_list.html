@@ -1,0 +1,35 @@
+{% extends "assets/base.html" %}
+
+{% block title %}
+Users
+{% endblock %}
+
+{% block content %}
+<div class="container text-align-left">
+    <div class="border rounded p-3" style="border-color:#cecece;">
+        <h3>User List</h3>
+        
+        <hr/>
+
+        <ul class="user-list">
+
+            {% for user in users %}
+
+                <li class="my-3" style="text-decoration: none;">
+                    <a class="user-link" href="{% url 'assets:user_profile' user.id %}">
+                        {{ user.first_name }}
+                        {{ user.last_name }}
+                    </a>
+                </li>
+
+            {% empty %}
+
+                <li>No users found.</li>
+
+            {% endfor %}
+
+        </ul>
+    </div>
+</div>
+
+{% endblock %}
