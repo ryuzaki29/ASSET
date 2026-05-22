@@ -4,41 +4,310 @@
 
 {% block extra_style %}
 <style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: linear-gradient(to bottom right, #fff7ed, #fffbeb);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
     main {
+        padding: 30px;
+        min-height: 100vh;
+    }
+
+    /* CONTAINER */
+    .asset-container {
+        max-width: 850px;
+        margin: auto;
+    }
+
+    /* HEADER CARD */
+    .asset-header {
+        background: linear-gradient(135deg, #f97316, #ea580c);
+        color: white;
+        padding: 30px;
+        border-radius: 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 10px 30px rgba(249, 115, 22, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .asset-header::after {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 160px;
+        height: 160px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 50%;
+    }
+
+    .asset-header h1 {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 700;
+    }
+
+    .asset-id {
+        margin-top: 10px;
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.18);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    /* DETAILS CARD */
+    .asset-details {
         background: white;
-        border: 1px solid #ddd;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        border: 1px solid #fed7aa;
     }
 
-    dt {
-        font-weight: bold;
-        margin-top: 12px;
+    /* GRID */
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 22px;
     }
 
-    dd {
-        margin-left: 0;
+    /* DETAIL ITEM */
+    .detail-item {
+        background: #fffaf5;
+        border: 1px solid #ffedd5;
+        border-radius: 16px;
+        padding: 18px;
+        transition: 0.25s ease;
+    }
+
+    .detail-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(249, 115, 22, 0.10);
+    }
+
+    .detail-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #9a3412;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 10px;
+    }
+
+    .detail-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #431407;
+        word-break: break-word;
+    }
+
+    /* STATUS BADGES */
+    .status {
+        display: inline-block;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-maintenance {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    /* LOG DETAILS */
+    .log-box {
+        margin-top: 26px;
+        padding: 20px;
+        border-radius: 16px;
+        background: #fffaf5;
+        border: 1px solid #ffedd5;
+    }
+
+    .log-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #9a3412;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        letter-spacing: 0.8px;
+    }
+
+    .log-content {
+        color: #44403c;
+        line-height: 1.7;
+        white-space: pre-wrap;
+    }
+
+    /* BUTTONS */
+    .action-buttons {
+        margin-top: 28px;
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 12px 18px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.25s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(to right, #f97316, #ea580c);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        opacity: 0.92;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: white;
+        border: 1px solid #fdba74;
+        color: #c2410c;
+    }
+
+    .btn-secondary:hover {
+        background: #fff7ed;
+    }
+
+    /* MOBILE */
+    @media (max-width: 640px) {
+
+        main {
+            padding: 18px;
+        }
+
+        .asset-header {
+            padding: 24px;
+        }
+
+        .asset-header h1 {
+            font-size: 28px;
+        }
+
+        .asset-details {
+            padding: 22px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-    <h1>{{ asset.name }}</h1>
-    <dl>
-        <dt>Type</dt>
-        <dd>{{ asset.get_asset_type_display }}</dd>
 
-        <dt>Category</dt>
-        <dd>{{ asset.category }}</dd>
+<div class="asset-container">
 
-        <dt>Cost</dt>
-        <dd>{{ asset.cost }}</dd>
+    <!-- HEADER -->
+    <div class="asset-header">
+        <h1>{{ asset.name }}</h1>
 
-        <dt>Quantity</dt>
-        <dd>{{ asset.quantity }}</dd>
+        <div class="asset-id">
+            Asset ID #{{ asset.id }}
+        </div>
+    </div>
 
-        <dt>Status</dt>
-        <dd>{{ asset.status }}</dd>
+    <!-- DETAILS -->
+    <div class="asset-details">
 
-        <dt>Log Details</dt>
-        <dd>{{ asset.log_details|default:"—" }}</dd>
-    </dl>
+        <div class="details-grid">
+
+            <div class="detail-item">
+                <div class="detail-label">Asset Type</div>
+                <div class="detail-value">
+                    {{ asset.get_asset_type_display }}
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Category</div>
+                <div class="detail-value">
+                    {{ asset.category }}
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Cost</div>
+                <div class="detail-value">
+                    ₱{{ asset.cost }}
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Quantity</div>
+                <div class="detail-value">
+                    {{ asset.quantity }}
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Status</div>
+
+                <div class="detail-value">
+                    <span class="status
+                        {% if asset.status == 'Active' %}
+                            status-active
+                        {% elif asset.status == 'Inactive' %}
+                            status-inactive
+                        {% else %}
+                            status-maintenance
+                        {% endif %}
+                    ">
+                        {{ asset.status }}
+                    </span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- LOG DETAILS -->
+        <div class="log-box">
+            <div class="log-title">Log Details</div>
+
+            <div class="log-content">
+                {{ asset.log_details|default:"No log details available." }}
+            </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="action-buttons">
+
+            <a href="{% url 'assets:asset_list' %}" class="btn btn-secondary">
+                ← Back to Assets
+            </a>
+
+            <a href="#" class="btn btn-primary">
+                Edit Asset
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
 {% endblock %}
