@@ -4,49 +4,312 @@
 
 {% block extra_style %}
 <style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: linear-gradient(to bottom right, #fff7ed, #fffbeb);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
     main {
-        padding: 0 16px;
+        padding: 30px;
+        min-height: 100vh;
     }
 
-    ul {
-        list-style: none;
-        padding-left: 0;
+    /* HEADER */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding: 24px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #f97316, #ea580c);
+        color: white;
+        box-shadow: 0 10px 25px rgba(249, 115, 22, 0.25);
     }
 
-    li {
+    .page-header h1 {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 700;
+    }
+
+    .asset-count {
+        margin-top: 6px;
+        opacity: 0.9;
+        font-size: 14px;
+    }
+
+    /* GRID */
+    .asset-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 22px;
+    }
+
+    /* CARD */
+    .asset-card {
+        position: relative;
+        overflow: hidden;
         background: white;
-        margin-bottom: 12px;
-        padding: 16px;
-        border: 1px solid #ddd;
+        border-radius: 18px;
+        padding: 22px;
+        transition: all 0.25s ease;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        border: 1px solid #fed7aa;
     }
 
-    .pagination {
+    .asset-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(to right, #f97316, #fb923c);
+    }
+
+    .asset-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 14px 32px rgba(249, 115, 22, 0.18);
+    }
+
+    /* TITLE */
+    .asset-title {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .asset-title a {
+        text-decoration: none;
+        color: #9a3412;
+        transition: 0.2s;
+    }
+
+    .asset-title a:hover {
+        color: #ea580c;
+    }
+
+    /* TYPE BADGE */
+    .asset-type {
+        display: inline-block;
+        margin-top: 12px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: #ffedd5;
+        color: #c2410c;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    /* INFO */
+    .asset-info {
         margin-top: 20px;
         display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 12px;
+        flex-direction: column;
+        gap: 14px;
     }
 
-    .pagination a {
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+    }
+
+    .label {
+        color: #78716c;
+        font-weight: 600;
+    }
+
+    .value {
+        color: #431407;
+        font-weight: 700;
+    }
+
+    /* STATUS */
+    .status {
+        padding: 7px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-maintenance {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    /* BUTTON */
+    .view-btn {
         display: inline-block;
+        margin-top: 22px;
+        width: 100%;
+        text-align: center;
+        padding: 12px;
+        border-radius: 12px;
+        text-decoration: none;
+        background: linear-gradient(to right, #f97316, #ea580c);
+        color: white;
+        font-weight: 600;
+        transition: 0.25s ease;
+    }
+
+    .view-btn:hover {
+        opacity: 0.92;
+        transform: scale(1.01);
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+        text-align: center;
+        padding: 70px 20px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+        border: 1px solid #fed7aa;
+    }
+
+    .empty-state h2 {
+        color: #9a3412;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #78716c;
+    }
+
+    /* PAGINATION */
+    .pagination {
+        margin-top: 40px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .pagination a,
+    .pagination span {
+        padding: 10px 15px;
+        border-radius: 10px;
+        background: white;
+        border: 1px solid #fdba74;
+        text-decoration: none;
+        color: #c2410c;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .pagination a:hover {
+        background: #ea580c;
+        color: white;
+    }
+
+    /* MOBILE */
+    @media (max-width: 640px) {
+        main {
+            padding: 18px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-    <h1>Assets</h1>
 
-    {% if assets %}
-    <ul>
-        {% for asset in assets %}
-        <li>
-            <a href="{% url 'assets:asset_detail' asset.id %}">{{ asset.name }}</a>
-            <p>Type: {{ asset.get_asset_type_display }} | Status: {{ asset.status }}</p>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-        <p>No assets yet.</p>
-    {% endif %}
+<div class="page-header">
+    <div>
+        <h1>Asset Inventory</h1>
+        <div class="asset-count">
+            Total Registered Assets: {{ assets|length }}
+        </div>
+    </div>
+</div>
+
+{% if assets %}
+
+<div class="asset-grid">
+
+    {% for asset in assets %}
+    <div class="asset-card">
+
+        <h2 class="asset-title">
+            <a href="{% url 'assets:asset_detail' asset.id %}">
+                {{ asset.name }}
+            </a>
+        </h2>
+
+        <div class="asset-type">
+            {{ asset.get_asset_type_display }}
+        </div>
+
+        <div class="asset-info">
+
+            <div class="info-row">
+                <span class="label">Asset ID</span>
+                <span class="value">#{{ asset.id }}</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Status</span>
+
+                <span class="status
+                    {% if asset.status == 'Active' %}
+                        status-active
+                    {% elif asset.status == 'Inactive' %}
+                        status-inactive
+                    {% else %}
+                        status-maintenance
+                    {% endif %}
+                ">
+                    {{ asset.status }}
+                </span>
+            </div>
+
+        </div>
+
+        <a href="{% url 'assets:asset_detail' asset.id %}" class="view-btn">
+            View Details
+        </a>
+
+    </div>
+    {% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="empty-state">
+    <h2>No Assets Available</h2>
+    <p>No assets have been added to the inventory system yet.</p>
+</div>
+
+{% endif %}
+
 {% endblock %}
