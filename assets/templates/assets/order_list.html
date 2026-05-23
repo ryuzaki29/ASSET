@@ -222,6 +222,27 @@
         color: white;
     }
 
+    /* CREATE BUTTON */
+    .create-btn {
+        padding: 12px 24px;
+        background: white;
+        color: #c2410c;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .create-btn:hover {
+        background: #ffedd5;
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
     /* MOBILE */
     @media (max-width: 640px) {
         main {
@@ -250,6 +271,7 @@
             Total Registered Assets: {{ assets|length }}
         </div>
     </div>
+    <a href="{% url 'assets:asset_create' %}" class="create-btn">Add Asset</a>
 </div>
 
 {% if assets %}
