@@ -1,0 +1,99 @@
+<!-- Create / Update Role -->
+{% extends "assets/base.html" %}
+
+{% block title %}Create Role{% endblock %}
+
+{% block extra_style %}
+<style>
+    main {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    h1 {
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    label {
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: inherit;
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    button {
+        padding: 10px 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #333;
+        cursor: pointer;
+    }
+
+    button[type="submit"] {
+        background: #f0f0f0;
+    }
+
+    .cancel-btn {
+        background: #f0f0f0;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        color: #333;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <h1>Create New Role</h1>
+    
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="name">Role Name</label>
+            <input type="text" id="role_name" name="name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Role Description</label>
+            <textarea id="role_description" name="description" required></textarea>
+        </div>
+        
+        <div class="button-group">
+            <button type="submit">Add Role</button>
+            <a href="{% url 'roles:role_list' %}" class="cancel-btn">Cancel</a>
+        </div>
+    </form>
+{% endblock %}
