@@ -1,7 +1,7 @@
 <!-- Read All Roles -->
 {% extends "assets/base.html" %}
 
-{% block title %}Assets{% endblock %}
+{% block title %}Role List{% endblock %}
 
 {% block extra_style %}
 <style>
@@ -257,7 +257,6 @@
     }
 </style>
 {% endblock %}
-
 {% block content %}
 
 <div class="page-header">
@@ -284,16 +283,11 @@
             {{ role.description|default:"No description" }}
         </div>
 
-        <div class="asset-info">
+        <div class="asset-info" style="display:none;">
 
             <div class="info-row">
-                <span class="label">Role ID</span>
-                <span class="value">#{{ role.id }}</span>
-            </div>
-
-            <div class="info-row">
-                <span class="label">Status</span>
-
+                <span class="label">Role Code</span>
+                <span class="value">{{ role.name }}</span>
             </div>
 
         </div>

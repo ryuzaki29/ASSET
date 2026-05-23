@@ -1,14 +1,19 @@
 from django.db import models
 
+
 class Role(models.Model):
-    # Using choices to restrict it to Administrator, Executive, and Staff
-    ROLE_CHOICES = [
-        ('ADMIN', 'Administrator'),
-        ('EXEC', 'Executive'),
-        ('STAFF', 'Staff'),
-    ]
-    name = models.CharField(max_length=50, choices=ROLE_CHOICES, unique=True)
-    description = models.TextField(blank=True)
+
+    # internal role identifier (used in code/logic)
+    name = models.CharField(
+        max_length=20,
+        unique=True             
+    )
+
+    # human-readable description (free text / flexible)
+    description = models.CharField(
+        max_length=255,
+        blank=True
+    )
 
     def __str__(self):
-        return self.name
+        return self.name            
