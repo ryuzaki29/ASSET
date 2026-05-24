@@ -3,40 +3,43 @@ from django.urls import reverse_lazy
 from django import forms
 from .models import Role
 
-# List all Roles
-class RoleForm(forms.ModelForm):
-    name = forms.CharField(max_length=20)
 
+class RoleForm(forms.ModelForm):
     class Meta:
         model = Role
-        fields = ['name', 'description']
-        
+        fields = ['name', 'code', 'description']
+
 class RoleListView(ListView):
     model = Role
     template_name = 'roles/role_list.html'
     context_object_name = 'roles'
 
-# Create a Role
+    def get_queryset(self):
+        if not Role.objects.exists():
+            for code, name in Role.ROLE_CHOICES:
+                Role.objects.create(code=code, name=name)
+        return Role.objects.all()
+
 class RoleCreateView(CreateView):
     model = Role
     form_class = RoleForm
     template_name = 'roles/role_form.html'
     success_url = reverse_lazy('roles:role_list')
 
-# Update a Role
+
 class RoleUpdateView(UpdateView):
     model = Role
     form_class = RoleForm
     template_name = 'roles/role_form.html'
-    success_url = reverse_lazy('roles:role_list')  
-
-# Delete a Role
-class RoleDeleteView(DeleteView):
-    model = Role
-    template_name = 'roles/role_delete.html'  
     success_url = reverse_lazy('roles:role_list')
 
-# Detail a Role
+
+class RoleDeleteView(DeleteView):
+    model = Role
+    template_name = 'roles/role_delete.html'
+    success_url = reverse_lazy('roles:role_list')
+
+
 class RoleDetailView(DetailView):
     model = Role
     template_name = 'roles/role_detail.html'

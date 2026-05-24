@@ -75,7 +75,7 @@
 
     .asset-card:hover {
         transform: translateY(-6px);
-        box-shadow: 0 14px 32px rgba(249, 115, 22, 0.18);
+        box-shadow: 0 10px 25px rgba(224, 239, 243, 0.25);
     }
 
     /* TITLE */
@@ -259,6 +259,16 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
+    /* Back Link */
+    .back_link {
+        color: #8a1538;
+        text-decoration: none;  
+    }
+    .back_link:hover {
+        color: #5a0e25;
+        text-decoration: underline;
+    }
+
 
     /* MOBILE */
     @media (max-width: 640px) {
@@ -295,7 +305,7 @@
 
     <div class="info-row">
         <span class="label">Role Code</span>
-        <span class="value">{{ role.name }}</span>
+        <span class="value">{{ role.code }}</span>
     </div>
 
     <div class="info-row">
@@ -306,7 +316,7 @@
 </div>
 
 <div class="button-group mt-3">
-    <a href="{% url 'roles:role_list' %}">Back to Roles List</a>
+    <a class="back_link" href="{% url 'roles:role_list' %}">Back to Roles List</a>
 </div>
 
 {% endblock %}

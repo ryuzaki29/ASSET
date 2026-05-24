@@ -3,17 +3,23 @@ from django.db import models
 
 class Role(models.Model):
 
-    # internal role identifier (used in code/logic)
     name = models.CharField(
-        max_length=20,
-        unique=True             
+        max_length=100,
+        unique=True
     )
 
-    # human-readable description (free text / flexible)
+    code = models.CharField(
+        max_length=50,
+        unique=True
+    )
+
     description = models.CharField(
         max_length=255,
         blank=True
     )
 
+    class Meta:
+        ordering = ["name"]
+
     def __str__(self):
-        return self.name            
+        return self.name

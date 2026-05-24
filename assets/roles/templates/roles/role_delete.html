@@ -75,7 +75,7 @@
 
     .asset-card:hover {
         transform: translateY(-6px);
-        box-shadow: 0 14px 32px rgba(249, 115, 22, 0.18);
+        box-shadow: 0 10px 25px rgba(224, 239, 243, 0.25);
     }
 
     /* TITLE */
@@ -218,27 +218,20 @@
         color: white;
     }
 
-    /* CREATE BUTTON */
-    .create-btn {
-        padding: 12px 24px;
-        background: white;
-        color: #8a1538;
-        border: none;
-        border-radius: 12px;
-        font-weight: 700;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.25s ease;
-        text-decoration: none;
-        display: inline-block;
+    /* DELETE BUTTON */
+    .delete-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    transition: background-color 0.25s ease;
     }
 
-    .create-btn:hover {
-        background: #ffcc33;
-        color: #8a1538;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    .delete-btn:hover {
+        background-color: #8a1538;
+        color: white;
     }
-
+    
+    /* CANCEL BUTTON */
     .cancel-btn {
         padding: 12px 24px;
         background: white;
@@ -287,12 +280,11 @@
         <p>{{ role.description }}</p>
     </div>
 
-    <form method="POST">
+    <form method="POST" style="width: fit-content;">
         {% csrf_token %}
-
-        <div class="button-group">
-            <button type="submit">Delete Role</button>
-            <a href="{% url 'roles:role_list' %}" class="cancel-btn">Cancel</a>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-sm delete-btn">Delete Role</button>
+            <a href="{% url 'roles:role_list' %}" class="btn btn-secondary btn-sm">Cancel</a>
         </div>
     </form>
 {% endblock %}

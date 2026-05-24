@@ -5,13 +5,11 @@
 
 {% block extra_style %}
 <style>
-    * {
-        box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
         background: #e9eeee;
-        font-family: 'Montserrat', Arial, Helvetica, sans-serif!important;
+        font-family: 'Montserrat', Arial, Helvetica, sans-serif !important;
     }
 
     main {
@@ -19,7 +17,6 @@
         min-height: 100vh;
     }
 
-    /* HEADER */
     .page-header {
         display: flex;
         justify-content: space-between;
@@ -38,189 +35,8 @@
         font-weight: 700;
     }
 
-    .asset-count {
-        margin-top: 6px;
-        opacity: 0.9;
-        font-size: 14px;
-    }
-
-    /* GRID */
-    .asset-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 22px;
-    }
-
-    /* CARD */
-    .asset-card {
-        position: relative;
-        overflow: hidden;
-        background: white;
-        border-radius: 18px;
-        padding: 22px;
-        transition: all 0.25s ease;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-        border: 1px solid #8a1538;
-    }
-
-    .asset-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 6px;
-        background: #8a1538;
-    }
-
-    .asset-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 14px 32px rgba(249, 115, 22, 0.18);
-    }
-
-    /* TITLE */
-    .asset-title {
-        margin: 0;
-        font-size: 22px;
-        font-weight: 700;
-    }
-
-    .asset-title a {
-        text-decoration: none;
-        color: #8a1538;
-    }
-
-    .asset-title a:hover {
-        color: #5a0e25;
-    }
-
-    /* TYPE BADGE */
-    .role-type {
-        display: inline-block;
-        margin-top: 12px;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: #ffedd5;
-        color: #8a1538;
-    }
-
-    /* INFO */
-    .role-info {
-        margin-top: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-    }
-
-    .info-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 14px;
-    }
-
-    .label {
-        color: #78716c;
-        font-weight: 600;
-    }
-
-    .value {
-        color: #431407;
-        font-weight: 700;
-    }
-
-    /* STATUS */
-    .status {
-        padding: 7px 14px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
-
-    .status-active {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .status-inactive {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    .status-maintenance {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    /* BUTTON */
-    .view-btn {
-        display: inline-block;
-        margin-top: 22px;
-        width: 100%;
-        text-align: center;
-        padding: 12px;
-        border-radius: 12px;
-        text-decoration: none;
-        background: #8a1538;
-        color: white;
-        font-weight: 600;
-        transition: 0.25s ease;
-    }
-
-    .view-btn:hover {
-        opacity: 0.92;
-        transform: scale(1.01);
-    }
-
-    /* EMPTY STATE */
-    .empty-state {
-        text-align: center;
-        padding: 70px 20px;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(224, 239, 243, 0.25);
-        border: 1px solid #8a1538;
-    }
-
-    .empty-state h2 {
-        color: #8a1538;
-        margin-bottom: 10px;
-    }
-
-    .empty-state p {
-        color: #78716c;
-    }
-
-    /* PAGINATION */
-    .pagination {
-        margin-top: 40px;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .pagination a,
-    .pagination span {
-        padding: 10px 15px;
-        border-radius: 10px;
-        background: white;
-        border: 1px solid #6e102c;
-        text-decoration: none;
-        color: #8a1538;
-        font-weight: 600;
-        transition: 0.2s;
-    }
-
-    .pagination a:hover {
-        background: #490b1e;
-        color: white;
-    }
-
-    /* CREATE BUTTON */
     .create-btn {
-        padding: 12px 24px;
+        padding: 10px 20px;
         background: white;
         color: #8a1538;
         border: none;
@@ -239,24 +55,103 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
-    /* MOBILE */
+    .table-wrapper {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        border: 1px solid #dee2e6;
+        width: 100%;
+    }
+
+    .table {
+        width: 100%;
+        margin: 0;
+    }
+
+    .table thead {
+        background: #8a1538!important;
+        color: white;
+    }
+
+    .table thead th {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        padding: 14px 16px;
+        border: none;
+        background: #8a1538!important;
+        color: white;
+    }
+
+    .table tbody td {
+        padding: 8px 16px;
+        vertical-align: middle;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .table tbody tr:hover {
+        background-color: #fdf4f6;
+    }
+
+    .btn-view {
+        background-color: #8a1538;
+        color: white;
+        border: none;
+        transition: background-color 0.25s ease;
+    }
+
+    .btn-view:hover {
+        background-color: #6e102c;
+        color: white;
+    }
+
+    .btn-edit {
+        background-color: #00573f;
+        color: white;
+        border: none;
+        transition: background-color 0.25s ease;
+    }
+
+    .btn-edit:hover {
+        background-color: #00291E;
+        color: white;
+    }
+
+    .btn-delete {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        transition: background-color 0.25s ease;
+    }
+
+    .btn-delete:hover {
+        background-color: #8a1538;
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 70px 20px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(224, 239, 243, 0.25);
+        border: 1px solid #8a1538;
+    }
+
+    .empty-state h2 { color: #8a1538; margin-bottom: 10px; }
+    .empty-state p { color: #78716c; }
+
     @media (max-width: 640px) {
-        main {
-            padding: 18px;
-        }
-
-        .page-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .page-header h1 {
-            font-size: 28px;
-        }
+        main { padding: 18px; }
+        .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .page-header h1 { font-size: 28px; }
     }
 </style>
 {% endblock %}
+
 {% block content %}
 
 <div class="page-header">
@@ -268,37 +163,39 @@
 
 {% if roles %}
 
-<div class="asset-grid">
-
-    {% for role in roles %}
-    <div class="asset-card">
-
-        <h2 class="asset-title">
-            <a href="{% url 'roles:role_detail' role.id %}">
-                {{ role.name }}
-            </a>
-        </h2>
-
-        <div class="asset-type">
-            {{ role.description|default:"No description" }}
-        </div>
-
-        <div class="asset-info" style="display:none;">
-
-            <div class="info-row">
-                <span class="label">Role Code</span>
-                <span class="value">{{ role.name }}</span>
-            </div>
-
-        </div>
-
-        <a href="{% url 'roles:role_detail' role.id %}" class="view-btn">
-            View Details
-        </a>
-
-    </div>
-    {% endfor %}
-
+<div class="table-wrapper">
+    <table class="table table-bordered mb-0">
+        <thead>
+            <tr>
+                <th>Role Name</th>
+                <th>Role Code</th>
+                <th>Description</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for role in roles %}
+            <tr>
+                <td>{{ role.name }}</td>
+                <td>{{ role.code }}</td>
+                <td>{{ role.description|default:"—" }}</td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="{% url 'roles:role_detail' role.id %}" class="btn btn-sm btn-view" title="View">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'roles:role_update' role.id %}" class="btn btn-sm btn-edit" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'roles:role_delete' role.id %}" class="btn btn-sm btn-delete" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 {% else %}
