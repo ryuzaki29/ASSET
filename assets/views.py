@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 from .forms import UserRegistrationForm
 from .models import Asset, Profile
+from assets.roles.models import Role
 
 
 def landing(request):
@@ -10,7 +11,6 @@ def landing(request):
 
 # Added Registration Form
 def register_view(request):
-
     form = UserRegistrationForm(request.POST or None)
 
     if request.method == "POST":
@@ -19,15 +19,19 @@ def register_view(request):
             user.set_password(form.cleaned_data["password"])
             user.save()
 
+            role = Role.objects.get(id=request.POST.get("designation"))
+
             Profile.objects.create(
                 user=user,
                 contact_number=request.POST.get("contact_number"),
-                designation=request.POST.get("designation")
+                designation=role
             )
 
             return redirect("assets:landing")
 
-    return render(request, "users/register.html", {"form": form})
+    roles = Role.objects.all()
+    return render(request, "users/register.html", {"form": form, "roles": roles})
+
 
 # User Profile 
 def user_profile(request, user_id):
