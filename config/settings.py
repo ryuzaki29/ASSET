@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "debug_toolbar",
     "assets.apps.AssetsConfig",
+    "assets.roles.apps.RolesConfig",
 ]
 
 MIDDLEWARE = [
