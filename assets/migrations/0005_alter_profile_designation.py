@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('orders', '0004_profile'),
-        ('roles', '0007_alter_role_code'),
+        ('roles', '0006_assign_unique_codes'),
     ]
 
     operations = [

@@ -9,8 +9,7 @@ class Role(models.Model):
     )
 
     code = models.CharField(
-        max_length=50,
-        unique=True
+        max_length=50
     )
 
     description = models.CharField(

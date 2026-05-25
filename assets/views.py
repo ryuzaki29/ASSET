@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from .forms import UserRegistrationForm
 from .models import Asset, Profile
 from assets.roles.models import Role
@@ -9,6 +10,7 @@ from assets.roles.models import Role
 def landing(request):
     return render(request, "assets/landing.html")
 
+# Added Registration Form
 def register_view(request):
     form = UserRegistrationForm(request.POST or None)
 
@@ -33,6 +35,7 @@ def register_view(request):
 
 
 # User Profile 
+@login_required
 def user_profile(request, user_id):
 
     user = get_object_or_404(User, id=user_id)
@@ -48,6 +51,7 @@ def user_profile(request, user_id):
     )
 
 # User List
+@login_required
 def user_list(request):
 
     users = User.objects.all()
@@ -66,16 +70,19 @@ def index(request):
     return render(request, "assets/index.html")
 
 
+@login_required
 def asset_list(request):
     assets = Asset.objects.all()
     context = {"assets": assets}
     return render(request, "assets/order_list.html", context)
 
+@login_required
 def asset_detail(request, asset_id):
     asset = get_object_or_404(Asset, id=asset_id)
     context = {"asset": asset}
     return render(request, "assets/order_detail.html", context)
 
+@login_required
 def asset_create(request):
     if request.method == "POST":
         asset = Asset(
@@ -95,6 +102,7 @@ def asset_create(request):
     }
     return render(request, "assets/create_asset.html", context)
 
+@login_required
 def asset_edit(request, asset_id):
     asset = get_object_or_404(Asset, id=asset_id)
     
