@@ -1,42 +1,354 @@
 {% extends "assets/base.html" %}
+{% load static %}
 
-{% block title %}
-Users
+{% block title %}{{ profile_user.first_name }} {{ profile_user.last_name }} - User Profile{% endblock %}
+
+{% block extra_style %}
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: linear-gradient(to bottom right, #faf5f0, #f5ede4);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    main {
+        padding: 30px;
+        min-height: 100vh;
+    }
+
+    /* BACK BUTTON */
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        color: #8a1538;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+        color: #a01c4a;
+        transform: translateX(-4px);
+    }
+
+    /* HEADER SECTION */
+    .profile-header {
+        background: linear-gradient(135deg, #8a1538, #a01c4a);
+        border-radius: 18px;
+        padding: 40px;
+        color: white;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 25px rgba(138, 21, 56, 0.25);
+        display: flex;
+        align-items: flex-start;
+        gap: 30px;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        min-width: 120px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 56px;
+        font-weight: 700;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .profile-title {
+        flex: 1;
+    }
+
+    .profile-name {
+        font-size: 32px;
+        font-weight: 700;
+        margin: 0 0 12px 0;
+    }
+
+    .profile-designation {
+        font-size: 16px;
+        opacity: 1;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: white;
+        font-weight: 600;
+    }
+
+    .profile-designation i {
+        font-size: 18px;
+    }
+
+    /* INFO SECTION */
+    .info-section {
+        background: white;
+        border-radius: 18px;
+        padding: 30px;
+        margin-bottom: 30px;
+        border: 1px solid #e5d5cc;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    .info-section h2 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #6b0f28;
+        margin: 0 0 24px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f5e5e0;
+    }
+
+    .info-section h2 i {
+        font-size: 24px;
+        color: #8a1538;
+    }
+
+    /* INFO GRID */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 24px;
+    }
+
+    .info-item {
+        padding: 16px;
+        background: #faf5f0;
+        border-radius: 12px;
+        border-left: 4px solid #8a1538;
+    }
+
+    .info-label {
+        font-size: 12px;
+        color: #a01c4a;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    .info-label i {
+        font-size: 14px;
+    }
+
+    .info-value {
+        font-size: 16px;
+        color: #4a0818;
+        font-weight: 600;
+        word-break: break-all;
+    }
+
+    .info-value.empty {
+        color: #c97a9f;
+        font-style: italic;
+    }
+
+    /* REQUESTS SECTION */
+    .requests-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+
+    .request-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid #e5d5cc;
+        border-left: 4px solid #8a1538;
+    }
+
+    .request-card::before {
+        content: "📦";
+        margin-right: 8px;
+    }
+
+    .request-name {
+        font-weight: 700;
+        color: #6b0f28;
+    }
+
+    .request-qty {
+        color: #8a1538;
+        font-size: 14px;
+        margin-top: 8px;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #c97a9f;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        display: block;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 16px;
+    }
+
+    /* ACTION BUTTONS */
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 30px;
+    }
+
+    .btn-custom {
+        padding: 12px 24px;
+        border-radius: 10px;
+        border: none;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-primary-custom {
+        background: #8a1538;
+        color: white;
+    }
+
+    .btn-primary-custom:hover {
+        background: #a01c4a;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(138, 21, 56, 0.3);
+    }
+
+    .btn-secondary-custom {
+        background: #f5e5e0;
+        color: #6b0f28;
+        border: 2px solid #8a1538;
+    }
+
+    .btn-secondary-custom:hover {
+        background: #e5d5cc;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
-    <div class="container text-align-left">
-        <div class="border rounded p-3" style="border-color:#cecece;">
-            <h1>User Profile</h1>
-            <hr style="border-color: #c0c0c0;" />
-            
-            <p><strong>Name:</strong> {{ profile_user.first_name }} {{ profile_user.last_name }}</p>
+<a href="{% url 'assets:user_list' %}" class="back-button">
+    <i class="bi bi-arrow-left"></i> Back to Users
+</a>
 
-            <p><strong>Designation:</strong>
-                {{ profile_user.profile.designation }}
-            </p>
-
-            <p><strong>Email:</strong> {{ profile_user.email }}</p>
-
-            <p><strong>Contact Number:</strong>
-                {{ profile_user.profile.contact_number }}
-            </p>
-
-            <h2>Inventory Requests</h2>
-            <hr style="border-color: #c0c0c0;" />
-
-            <ul>
-                {% for request in requests %}
-                    <li>
-                        {{ request.asset_name }} - Qty: {{ request.quantity }}
-                    </li>
-                {% empty %}
-                    <li>No requests yet.</li>
-                {% endfor %}
-            </ul>
-        </div>
-        
+<!-- PROFILE HEADER -->
+<div class="profile-header">
+    <div class="profile-avatar">
+        {{ profile_user.first_name|slice:":1" }}{{ profile_user.last_name|slice:":1" }}
     </div>
+    <div class="profile-title">
+        <h1 class="profile-name">{{ profile_user.first_name }} {{ profile_user.last_name }}</h1>
+        <p class="profile-designation">
+            <i class="bi bi-briefcase"></i>
+            {% if profile_user.profile.designation %}
+                {{ profile_user.profile.designation }}
+            {% else %}
+                System User
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<!-- CONTACT INFORMATION -->
+<div class="info-section">
+    <h2>
+        <i class="bi bi-info-circle"></i> Contact Information
+    </h2>
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-label">
+                <i class="bi bi-envelope"></i> Email Address
+            </div>
+            <div class="info-value">
+                {% if profile_user.email %}
+                    <a href="mailto:{{ profile_user.email }}" style="color: inherit; text-decoration: none;">
+                        {{ profile_user.email }}
+                    </a>
+                {% else %}
+                    <span class="empty">Not provided</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="info-item">
+            <div class="info-label">
+                <i class="bi bi-telephone"></i> Phone Number
+            </div>
+            <div class="info-value">
+                {% if profile_user.profile.contact_number %}
+                    <a href="tel:{{ profile_user.profile.contact_number }}" style="color: inherit; text-decoration: none;">
+                        {{ profile_user.profile.contact_number }}
+                    </a>
+                {% else %}
+                    <span class="empty">Not provided</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="info-item">
+            <div class="info-label">
+                <i class="bi bi-calendar-event"></i> Account Status
+            </div>
+            <div class="info-value">
+                {% if profile_user.is_active %}
+                    <span style="color: #16a34a; font-weight: 700;">✓ Active</span>
+                {% else %}
+                    <span style="color: #dc2626; font-weight: 700;">✗ Inactive</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- INVENTORY REQUESTS SECTION -->
+<div class="info-section">
+    <h2>
+        <i class="bi bi-box-seam"></i> Inventory Requests
+    </h2>
+    
+    {% if requests %}
+        <div class="requests-grid">
+            {% for request in requests %}
+                <div class="request-card">
+                    <div class="request-name">{{ request.asset_name }}</div>
+                    <div class="request-qty"><i class="bi bi-collection"></i> Quantity: {{ request.quantity }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>No inventory requests yet</p>
+        </div>
+    {% endif %}
+</div>
 
 {% endblock %}
