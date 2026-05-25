@@ -1,0 +1,134 @@
+{% extends "assets/base.html" %}
+
+{% block title %}Edit User{% endblock %}
+
+{% block extra_style %}
+<style>
+    .edit-shell {
+        max-width: 720px;
+        margin: 0 auto 40px;
+        padding: 28px;
+    }
+
+    .edit-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 24px 60px rgba(15,23,42,0.06);
+        overflow: hidden;
+    }
+
+    .edit-card-body {
+        padding: 28px 32px;
+    }
+
+    .edit-card h2 {
+        margin: 0 0 8px;
+        font-size: 1.6rem;
+    }
+
+    .edit-card p.lead {
+        margin: 0 0 18px;
+        color: #6b7280;
+    }
+
+    .form-row {
+        margin-bottom: 14px;
+    }
+
+    .form-row label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: #111827;
+    }
+
+    .edit-card input[type="text"],
+    .edit-card input[type="email"],
+    .edit-card input[type="password"] {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #e6e9ee;
+        font-size: 1rem;
+        color: #111827;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-top: 18px;
+    }
+
+    .hero-button {
+        background: #8a1538;
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 10px;
+        border: none;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .hero-button:hover { transform: translateY(-1px); }
+
+    .action-button {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: #f3f4f6;
+        color: #374151;
+        text-decoration: none;
+        border: 1px solid transparent;
+    }
+
+    @media (max-width: 640px) {
+        .edit-shell { padding: 18px; }
+        .edit-card-body { padding: 18px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="user-page">
+    <section class="user-hero">
+        <h1>Edit User</h1>
+        <p>Update user details below.</p>
+    </section>
+
+    <div class="edit-shell">
+        <div class="edit-card">
+            <div class="edit-card-body">
+                <h2>Account details</h2>
+                <p class="lead">Change username or email for this account. Click Update to save.</p>
+
+                <form method="POST" novalidate>
+                    {% csrf_token %}
+
+                    <div class="form-row">
+                        <label for="id_username">Username</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="errors">{{ form.username.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-row">
+                        <label for="id_email">Email address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="errors">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="hero-button">Update User</button>
+                        <a href="{% url 'assets:user_list' %}" class="action-button">Back to Users</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
