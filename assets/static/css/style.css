@@ -22,9 +22,7 @@ body.landing-bg-overlay::after{
     content: "";
     position: absolute;
     inset: 0;
-
     background: rgba(0,0,0,0.35);
-
     z-index: -1;
 }
 
@@ -32,7 +30,7 @@ body.landing-bg-overlay::after{
     background: white;
     border: 1px solid #ddd;
     border-radius: 8px;
-    padding: 48px 40px;
+    padding: 30px 40px;
     text-align: center;
     max-width: 400px;
     width: 100%;
@@ -97,12 +95,37 @@ p {
     border: 1px solid #222;
 }
 
+.btn-nav{
+    background-color:#8a1538!important;
+    box-shadow: none !important;
+    outline: none !important;
+    color:white;
+    border: 1px solid white!important;
+}
+
+.btn-nav:hover{
+    background-color:#620D26!important;
+    box-shadow: none !important;
+    outline: none !important;
+    color:white;
+    border: 1px solid #8a1538!important;
+}
+
+.btn-nav:focus,
+.btn-nav:active,
+.btn-nav:focus-visible {
+    box-shadow: none !important;
+    outline: none !important;
+    color: white;
+    border: 1px solid #620D26!important;
+}
+
 .btn-outline:hover {
     background: #f0f0f0;
 }
 
 
-/***** Login Form CSS ******/
+/***** Login Form and User Registration List CSS ******/
 .back-link {
     display: block;
     text-align: center;
@@ -112,21 +135,32 @@ p {
     font-size: 0.9rem;
 }
 
-.registration-link{
+.registration-link, .pwreset-link{
     margin-top: 16px;
     color: #555;
     text-decoration: none;
     font-size: 0.9rem;   
 }
-.pwreset-link{
-    margin-top: 16px;
-    color: #555;
+
+.user-link{
+    color: #555!important;
     text-decoration: none;
-    font-size: 0.9rem;    
+    font-size: 0.9rem;   
 }
 
-.back-link:hover, .registration-link:hover, .pwreset-link:hover{
-    color:#8a1538;
+.back-link:hover, .registration-link:hover, .pwreset-link:hover, .user-link:hover{
+    color:#8a1538!important;
+}
+
+.user-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.user-list li::before {
+    content: "›"!important;
+    margin-right: 8px;
+    color: #555;
 }
 
 .login-body {

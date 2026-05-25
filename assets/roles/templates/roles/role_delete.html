@@ -1,6 +1,7 @@
-{% extends "assets/base.html" %}
+<!-- Delete Role -->
+ {% extends "assets/base.html" %}
 
-{% block title %}Assets{% endblock %}
+{% block title %}Delete Role{% endblock %}
 
 {% block extra_style %}
 <style>
@@ -9,8 +10,8 @@
     }
 
     body {
-        background: linear-gradient(to bottom right, #fff7ed, #fffbeb);
-        font-family: 'Segoe UI', sans-serif;
+        background: #e9eeee;
+        font-family: 'Montserrat', Arial, Helvetica, sans-serif!important;
     }
 
     main {
@@ -26,9 +27,9 @@
         margin-bottom: 30px;
         padding: 24px;
         border-radius: 18px;
-        background: linear-gradient(135deg, #f97316, #ea580c);
+        background: #8a1538;
         color: white;
-        box-shadow: 0 10px 25px rgba(249, 115, 22, 0.25);
+        box-shadow: 0 10px 25px rgba(224, 239, 243, 0.25);
     }
 
     .page-header h1 {
@@ -59,7 +60,7 @@
         padding: 22px;
         transition: all 0.25s ease;
         box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-        border: 1px solid #fed7aa;
+        border: 1px solid #8a1538;
     }
 
     .asset-card::before {
@@ -69,12 +70,12 @@
         left: 0;
         width: 100%;
         height: 6px;
-        background: linear-gradient(to right, #f97316, #fb923c);
+        background: #8a1538;
     }
 
     .asset-card:hover {
         transform: translateY(-6px);
-        box-shadow: 0 14px 32px rgba(249, 115, 22, 0.18);
+        box-shadow: 0 10px 25px rgba(224, 239, 243, 0.25);
     }
 
     /* TITLE */
@@ -86,30 +87,25 @@
 
     .asset-title a {
         text-decoration: none;
-        color: #9a3412;
-        transition: 0.2s;
+        color: #8a1538;
     }
 
     .asset-title a:hover {
-        color: #ea580c;
+        color: #5a0e25;
     }
 
     /* TYPE BADGE */
-    .asset-type {
+    .role-type {
         display: inline-block;
         margin-top: 12px;
         padding: 6px 12px;
         border-radius: 999px;
         background: #ffedd5;
-        color: #c2410c;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
+        color: #8a1538;
     }
 
     /* INFO */
-    .asset-info {
+    .role-info {
         margin-top: 20px;
         display: flex;
         flex-direction: column;
@@ -167,7 +163,7 @@
         padding: 12px;
         border-radius: 12px;
         text-decoration: none;
-        background: linear-gradient(to right, #f97316, #ea580c);
+        background: #8a1538;
         color: white;
         font-weight: 600;
         transition: 0.25s ease;
@@ -184,12 +180,12 @@
         padding: 70px 20px;
         background: white;
         border-radius: 20px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-        border: 1px solid #fed7aa;
+        box-shadow: 0 10px 25px rgba(224, 239, 243, 0.25);
+        border: 1px solid #8a1538;
     }
 
     .empty-state h2 {
-        color: #9a3412;
+        color: #8a1538;
         margin-bottom: 10px;
     }
 
@@ -210,23 +206,36 @@
         padding: 10px 15px;
         border-radius: 10px;
         background: white;
-        border: 1px solid #fdba74;
+        border: 1px solid #6e102c;
         text-decoration: none;
-        color: #c2410c;
+        color: #8a1538;
         font-weight: 600;
         transition: 0.2s;
     }
 
     .pagination a:hover {
-        background: #ea580c;
+        background: #490b1e;
         color: white;
     }
 
-    /* CREATE BUTTON */
-    .create-btn {
+    /* DELETE BUTTON */
+    .delete-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    transition: background-color 0.25s ease;
+    }
+
+    .delete-btn:hover {
+        background-color: #8a1538;
+        color: white;
+    }
+    
+    /* CANCEL BUTTON */
+    .cancel-btn {
         padding: 12px 24px;
         background: white;
-        color: #c2410c;
+        color: #8a1538;
         border: none;
         border-radius: 12px;
         font-weight: 700;
@@ -237,11 +246,12 @@
         display: inline-block;
     }
 
-    .create-btn:hover {
-        background: #ffedd5;
-        transform: scale(1.05);
+    .cancel-btn:hover {
+        background: #ffcc33;
+        color: #8a1538;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
+
 
     /* MOBILE */
     @media (max-width: 640px) {
@@ -263,75 +273,18 @@
 {% endblock %}
 
 {% block content %}
+    <h1>Delete Role</h1>
 
-<div class="page-header">
-    <div>
-        <h1>Asset Inventory</h1>
-        <div class="asset-count">
-            Total Registered Assets: {{ assets|length }}
-        </div>
+    <div class="form-group">
+        <p>Are you sure you want to delete the role <strong>{{ role.name }}</strong>?</p>
+        <p>{{ role.description }}</p>
     </div>
-    <a href="{% url 'assets:asset_create' %}" class="create-btn">Add Asset</a>
-</div>
 
-{% if assets %}
-
-<div class="asset-grid">
-
-    {% for asset in assets %}
-    <div class="asset-card">
-
-        <h2 class="asset-title">
-            <a href="{% url 'assets:asset_detail' asset.id %}">
-                {{ asset.name }}
-            </a>
-        </h2>
-
-        <div class="asset-type">
-            {{ asset.get_asset_type_display }}
+    <form method="POST" style="width: fit-content;">
+        {% csrf_token %}
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-sm delete-btn">Delete Role</button>
+            <a href="{% url 'roles:role_list' %}" class="btn btn-secondary btn-sm">Cancel</a>
         </div>
-
-        <div class="asset-info">
-
-            <div class="info-row">
-                <span class="label">Asset ID</span>
-                <span class="value">#{{ asset.id }}</span>
-            </div>
-
-            <div class="info-row">
-                <span class="label">Status</span>
-
-                <span class="status
-                    {% if asset.status == 'Active' %}
-                        status-active
-                    {% elif asset.status == 'Inactive' %}
-                        status-inactive
-                    {% else %}
-                        status-maintenance
-                    {% endif %}
-                ">
-                    {{ asset.status }}
-                </span>
-            </div>
-
-        </div>
-
-        <a href="{% url 'assets:asset_detail' asset.id %}" class="view-btn">
-            View Details
-        </a>
-
-    </div>
-    {% endfor %}
-
-</div>
-
-{% else %}
-
-<div class="empty-state">
-    <h2>No Assets Available</h2>
-    <p>No assets have been added to the inventory system yet.</p>
-</div>
-
-{% endif %}
-
+    </form>
 {% endblock %}
