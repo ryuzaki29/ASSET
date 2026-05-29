@@ -1,0 +1,361 @@
+{% extends "assets/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_style %}
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: linear-gradient(to bottom right, #faf5f0, #f5ede4);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    main {
+        padding: 30px;
+        min-height: 100vh;
+    }
+
+    /* BACK BUTTON */
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        color: #8a1538;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+        color: #a01c4a;
+        transform: translateX(-4px);
+    }
+
+    /* FORM CONTAINER */
+    .form-container {
+        background: white;
+        border-radius: 18px;
+        padding: 40px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        border: 1px solid #e5d5cc;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .form-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f5e5e0;
+    }
+
+    .form-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #6b0f28;
+        margin: 0;
+    }
+
+    /* FORM GROUPS */
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 700;
+        color: #6b0f28;
+        margin-bottom: 8px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #e5d5cc;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: all 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #8a1538;
+        box-shadow: 0 0 0 3px rgba(138, 21, 56, 0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: auto;
+    }
+
+    /* ERROR MESSAGES */
+    .errorlist {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0 0 0;
+    }
+
+    .errorlist li {
+        color: #dc2626;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 0;
+    }
+
+    .form-group.has-error input,
+    .form-group.has-error select,
+    .form-group.has-error textarea {
+        border-color: #dc2626;
+        background-color: #fef2f2;
+    }
+
+    /* FORM BUTTONS */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 2px solid #f5e5e0;
+    }
+
+    .btn-submit {
+        flex: 1;
+        padding: 14px 24px;
+        background: #8a1538;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-submit:hover {
+        background: #a01c4a;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(138, 21, 56, 0.3);
+    }
+
+    .btn-cancel {
+        flex: 1;
+        padding: 14px 24px;
+        background: #f5e5e0;
+        color: #6b0f28;
+        border: 2px solid #8a1538;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-cancel:hover {
+        background: #e5d5cc;
+        text-decoration: none;
+    }
+
+    /* REQUIRED INDICATOR */
+    .required {
+        color: #dc2626;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'assets:user_list' %}" class="back-button">
+    <i class="bi bi-arrow-left"></i> Back to Users
+</a>
+
+<div class="form-container">
+    <div class="form-header">
+        <h1>{{ title }}</h1>
+    </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Username (create only) -->
+        {% if not user %}
+            <div class="form-group {% if form.username.errors %}has-error{% endif %}">
+                <label for="{{ form.username.id_for_label }}">
+                    Username <span class="required">*</span>
+                </label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.username.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- First Name -->
+        <div class="form-group {% if form.first_name.errors %}has-error{% endif %}">
+            <label for="{{ form.first_name.id_for_label }}">
+                First Name <span class="required">*</span>
+            </label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+                <ul class="errorlist">
+                    {% for error in form.first_name.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <!-- Last Name -->
+        <div class="form-group {% if form.last_name.errors %}has-error{% endif %}">
+            <label for="{{ form.last_name.id_for_label }}">
+                Last Name <span class="required">*</span>
+            </label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+                <ul class="errorlist">
+                    {% for error in form.last_name.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <!-- Email -->
+        <div class="form-group {% if form.email.errors %}has-error{% endif %}">
+            <label for="{{ form.email.id_for_label }}">
+                Email Address <span class="required">*</span>
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <ul class="errorlist">
+                    {% for error in form.email.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <!-- Password (create only) -->
+        {% if not user %}
+            <div class="form-group {% if form.password.errors %}has-error{% endif %}">
+                <label for="{{ form.password.id_for_label }}">
+                    Password <span class="required">*</span>
+                </label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.password.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="form-group {% if form.password2.errors %}has-error{% endif %}">
+                <label for="{{ form.password2.id_for_label }}">
+                    Confirm Password <span class="required">*</span>
+                </label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.password2.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Phone Number -->
+        <div class="form-group">
+            <label for="contact_number">Phone Number</label>
+            <input type="text" id="contact_number" name="contact_number" 
+                   value="{% if form.initial.contact_number %}{{ form.initial.contact_number }}{% endif %}">
+        </div>
+
+        <!-- Role/Designation -->
+        <div class="form-group">
+            <label for="designation">Role / Designation</label>
+            <select id="designation" name="designation">
+                <option value="">-- Select a Role --</option>
+                {% for role in roles %}
+                    <option value="{{ role.id }}" 
+                            {% if form.initial.designation == role.id %}selected{% endif %}>
+                        {{ role.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Status (edit only) -->
+        {% if user %}
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="is_active" name="is_active" 
+                           {% if form.instance.is_active %}checked{% endif %}>
+                    <label for="is_active" style="margin: 0; text-transform: capitalize;">
+                        Account is Active
+                    </label>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Form Errors -->
+        {% if form.non_field_errors %}
+            <div style="background: #fef2f2; border: 1px solid #dc2626; border-radius: 8px; padding: 12px; margin-bottom: 24px;">
+                <ul class="errorlist" style="margin: 0;">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <!-- Buttons -->
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">
+                <i class="bi bi-check-circle"></i> {% if user %}Update User{% else %}Create User{% endif %}
+            </button>
+            <a href="{% url 'assets:user_list' %}" class="btn-cancel">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "debug_toolbar",
     "assets.apps.AssetsConfig",
+    "assets.roles.apps.RolesConfig",
 ]
 
 MIDDLEWARE = [
@@ -68,6 +69,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "/home/"
 LOGOUT_REDIRECT_URL = "/"
 

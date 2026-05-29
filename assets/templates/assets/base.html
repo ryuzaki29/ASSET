@@ -9,14 +9,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <title>{% block title %}Assets{% endblock %}</title>
     <style>
         nav {
-            background: #8a1538;
-            padding: 12px 24px;
+            background: #8a1538 !important;
+            padding: 12px 24px !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            z-index: 1000 !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        body {
+            padding-top: 80px !important;
         }
 
         nav a {
@@ -28,6 +39,14 @@
         nav a:hover {
             color: #ffcc33;
         }
+        .dropdown-menu a.dropdown-item {
+            color: #212529 !important; 
+        }
+        
+        .dropdown-menu a.dropdown-item:hover {
+            color: #000000 !important;
+            background-color: #f8f9fa !important;
+    }
 
         nav form {
             display: inline;
@@ -67,18 +86,38 @@
                         Home
                     </a>
     
-                    <a class="" href="{% url 'assets:asset_list' %}">
-                        Assets
-                    </a>
-    
-                    <a class="" href="{% url 'assets:user_list' %}">
-                        Users
-                    </a>
-    
-                    {% if user.is_authenticated and user.is_staff %}
-                        <a class="" href="{% url 'admin:index' %}">
-                            Admin
+                    {% if user.is_authenticated %}
+                        <a class="" href="{% url 'assets:asset_list' %}">
+                            Assets
                         </a>
+        
+                        <a class="" href="{% url 'assets:user_list' %}">
+                            Users
+                        </a>
+
+                        <div class="dropdown">
+                            <a class="dropdown-toggle" href="#" id="rolesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Roles
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="rolesDropdown" style="background: #ffffff;">
+                                <li>
+                                    <a class="dropdown-item text-dark m-0 py-2 px-3" href="{% url 'roles:role_list' %}">
+                                        View Roles
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-dark m-0 py-2 px-3" href="{% url 'roles:role_create' %}">
+                                        Add New Role
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+        
+                        {% if user.is_staff %}
+                            <a class="" href="{% url 'admin:index' %}">
+                                Admin
+                            </a>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -105,5 +144,6 @@
     <main class="container my-4 py-4 px-3">
         {% block content %}{% endblock %}
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
