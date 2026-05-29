@@ -9,7 +9,7 @@
     }
 
     body {
-        background: linear-gradient(to bottom right, #fff7ed, #fffbeb);
+        background: linear-gradient(to bottom right, #fff7f9, #fff1f4);
         font-family: 'Segoe UI', sans-serif;
     }
 
@@ -18,59 +18,79 @@
         min-height: 100vh;
     }
 
-    /* CONTAINER */
+    /* PAGE CONTAINER */
     .asset-container {
-        max-width: 850px;
+        max-width: 1100px;
         margin: auto;
     }
 
-    /* HEADER CARD */
+    /* HEADER */
     .asset-header {
-        background: linear-gradient(135deg, #f97316, #ea580c);
-        color: white;
-        padding: 30px;
-        border-radius: 20px;
-        margin-bottom: 24px;
-        box-shadow: 0 10px 30px rgba(249, 115, 22, 0.25);
         position: relative;
         overflow: hidden;
+        background: linear-gradient(135deg, #8a1538, #6d102c);
+        color: white;
+        padding: 34px;
+        border-radius: 24px;
+        margin-bottom: 28px;
+        box-shadow: 0 12px 32px rgba(138, 21, 56, 0.25);
     }
 
     .asset-header::after {
         content: "";
         position: absolute;
-        top: -40px;
-        right: -40px;
-        width: 160px;
-        height: 160px;
+        top: -60px;
+        right: -60px;
+        width: 220px;
+        height: 220px;
         background: rgba(255,255,255,0.08);
         border-radius: 50%;
     }
 
     .asset-header h1 {
         margin: 0;
-        font-size: 34px;
+        font-size: 38px;
         font-weight: 700;
+        position: relative;
+        z-index: 1;
+    }
+
+    .asset-subtitle {
+        margin-top: 12px;
+        font-size: 15px;
+        opacity: 0.92;
+        position: relative;
+        z-index: 1;
     }
 
     .asset-id {
-        margin-top: 10px;
+        margin-top: 18px;
         display: inline-block;
-        padding: 6px 14px;
+        padding: 8px 16px;
         border-radius: 999px;
-        background: rgba(255,255,255,0.18);
+        background: rgba(255,255,255,0.16);
         font-size: 13px;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: 0.5px;
+        position: relative;
+        z-index: 1;
     }
 
-    /* DETAILS CARD */
+    /* MAIN DETAILS CARD */
     .asset-details {
         background: white;
-        border-radius: 20px;
-        padding: 30px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-        border: 1px solid #fed7aa;
+        border-radius: 24px;
+        padding: 34px;
+        box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+        border: 1px solid #e8b8c5;
+    }
+
+    /* SECTION TITLE */
+    .section-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #8a1538;
+        margin-bottom: 26px;
     }
 
     /* GRID */
@@ -80,42 +100,43 @@
         gap: 22px;
     }
 
-    /* DETAIL ITEM */
+    /* DETAIL CARD */
     .detail-item {
-        background: #fffaf5;
-        border: 1px solid #ffedd5;
-        border-radius: 16px;
-        padding: 18px;
-        transition: 0.25s ease;
+        background: #fff8fa;
+        border: 1px solid #e8b8c5;
+        border-radius: 18px;
+        padding: 22px;
+        transition: all 0.25s ease;
     }
 
     .detail-item:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 18px rgba(249, 115, 22, 0.10);
+        transform: translateY(-4px);
+        box-shadow: 0 10px 24px rgba(138, 21, 56, 0.10);
     }
 
     .detail-label {
         font-size: 13px;
         font-weight: 700;
-        color: #9a3412;
+        color: #8a1538;
         text-transform: uppercase;
-        letter-spacing: 0.8px;
-        margin-bottom: 10px;
+        letter-spacing: 0.7px;
+        margin-bottom: 12px;
     }
 
     .detail-value {
         font-size: 18px;
-        font-weight: 600;
-        color: #431407;
+        font-weight: 700;
+        color: #4a1021;
         word-break: break-word;
+        line-height: 1.5;
     }
 
-    /* STATUS BADGES */
+    /* STATUS */
     .status {
         display: inline-block;
         padding: 8px 14px;
         border-radius: 999px;
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
         letter-spacing: 0.5px;
         text-transform: uppercase;
@@ -136,83 +157,99 @@
         color: #92400e;
     }
 
-    /* LOG DETAILS */
+    /* LOG SECTION */
     .log-box {
-        margin-top: 26px;
-        padding: 20px;
-        border-radius: 16px;
-        background: #fffaf5;
-        border: 1px solid #ffedd5;
+        margin-top: 30px;
+        background: #fff8fa;
+        border: 1px solid #e8b8c5;
+        border-radius: 20px;
+        padding: 24px;
     }
 
     .log-title {
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 700;
-        color: #9a3412;
+        color: #8a1538;
         text-transform: uppercase;
-        margin-bottom: 12px;
-        letter-spacing: 0.8px;
+        letter-spacing: 0.7px;
+        margin-bottom: 14px;
     }
 
     .log-content {
-        color: #44403c;
-        line-height: 1.7;
+        color: #5c3744;
+        line-height: 1.8;
         white-space: pre-wrap;
+        font-size: 15px;
     }
 
-    /* BUTTONS */
+    /* ACTION BUTTONS */
     .action-buttons {
-        margin-top: 28px;
+        margin-top: 32px;
         display: flex;
         gap: 14px;
         flex-wrap: wrap;
     }
 
     .btn {
-        padding: 12px 18px;
-        border-radius: 12px;
+        padding: 14px 22px;
+        border-radius: 14px;
         text-decoration: none;
-        font-weight: 600;
-        transition: 0.25s ease;
+        font-size: 15px;
+        font-weight: 700;
+        transition: all 0.25s ease;
     }
 
     .btn-primary {
-        background: linear-gradient(to right, #f97316, #ea580c);
+        background: linear-gradient(to right, #8a1538, #6d102c);
         color: white;
+        box-shadow: 0 6px 18px rgba(138, 21, 56, 0.18);
     }
 
     .btn-primary:hover {
-        opacity: 0.92;
+        opacity: 0.95;
         transform: translateY(-2px);
     }
 
     .btn-secondary {
         background: white;
-        border: 1px solid #fdba74;
-        color: #c2410c;
+        border: 1px solid #e8b8c5;
+        color: #8a1538;
     }
 
     .btn-secondary:hover {
-        background: #fff7ed;
+        background: #fff1f4;
     }
 
     /* MOBILE */
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
 
         main {
             padding: 18px;
         }
 
         .asset-header {
-            padding: 24px;
+            padding: 26px;
         }
 
         .asset-header h1 {
-            font-size: 28px;
+            font-size: 30px;
         }
 
         .asset-details {
-            padding: 22px;
+            padding: 24px;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            text-align: center;
         }
     }
 </style>
@@ -224,50 +261,89 @@
 
     <!-- HEADER -->
     <div class="asset-header">
+
         <h1>{{ asset.name }}</h1>
+
+        <div class="asset-subtitle">
+            Detailed asset information and operational records.
+        </div>
 
         <div class="asset-id">
             Asset ID #{{ asset.id }}
         </div>
+
     </div>
 
     <!-- DETAILS -->
     <div class="asset-details">
 
+        <div class="section-title">
+            Asset Information
+        </div>
+
         <div class="details-grid">
 
+            <!-- ASSET TYPE -->
             <div class="detail-item">
-                <div class="detail-label">Asset Type</div>
+
+                <div class="detail-label">
+                    Asset Type
+                </div>
+
                 <div class="detail-value">
                     {{ asset.get_asset_type_display }}
                 </div>
+
             </div>
 
+            <!-- CATEGORY -->
             <div class="detail-item">
-                <div class="detail-label">Category</div>
+
+                <div class="detail-label">
+                    Category
+                </div>
+
                 <div class="detail-value">
                     {{ asset.category }}
                 </div>
+
             </div>
 
+            <!-- COST -->
             <div class="detail-item">
-                <div class="detail-label">Cost</div>
+
+                <div class="detail-label">
+                    Cost
+                </div>
+
                 <div class="detail-value">
                     ₱{{ asset.cost }}
                 </div>
+
             </div>
 
+            <!-- QUANTITY -->
             <div class="detail-item">
-                <div class="detail-label">Quantity</div>
+
+                <div class="detail-label">
+                    Quantity
+                </div>
+
                 <div class="detail-value">
                     {{ asset.quantity }}
                 </div>
+
             </div>
 
+            <!-- STATUS -->
             <div class="detail-item">
-                <div class="detail-label">Status</div>
+
+                <div class="detail-label">
+                    Status
+                </div>
 
                 <div class="detail-value">
+
                     <span class="status
                         {% if asset.status == 'Active' %}
                             status-active
@@ -279,28 +355,36 @@
                     ">
                         {{ asset.status }}
                     </span>
+
                 </div>
+
             </div>
 
         </div>
 
         <!-- LOG DETAILS -->
         <div class="log-box">
-            <div class="log-title">Log Details</div>
+
+            <div class="log-title">
+                Log Details / Notes
+            </div>
 
             <div class="log-content">
                 {{ asset.log_details|default:"No log details available." }}
             </div>
+
         </div>
 
         <!-- ACTION BUTTONS -->
         <div class="action-buttons">
 
-            <a href="{% url 'assets:asset_list' %}" class="btn btn-secondary">
+            <a href="{% url 'assets:asset_list' %}"
+               class="btn btn-secondary">
                 ← Back to Assets
             </a>
 
-            <a href="{% url 'assets:asset_edit' asset.id %}" class="btn btn-primary">
+            <a href="{% url 'assets:asset_edit' asset.id %}"
+               class="btn btn-primary">
                 Edit Asset
             </a>
 
