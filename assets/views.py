@@ -66,6 +66,84 @@ def user_list(request):
         context
     )
 
+
+# User Create
+@login_required
+def user_create(request):
+    if request.method == "POST":
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data["password"])
+            user.save()
+
+            role_id = request.POST.get("designation")
+            if role_id:
+                role = Role.objects.get(id=role_id)
+            else:
+                role = Role.objects.first()
+
+            contact_number = request.POST.get("contact_number", "")
+            
+            Profile.objects.create(
+                user=user,
+                contact_number=contact_number,
+                designation=role
+            )
+
+            return redirect("assets:user_list")
+    else:
+        form = UserRegistrationForm()
+
+    roles = Role.objects.all()
+    return render(request, "users/user_form.html", {"form": form, "roles": roles, "title": "Create User"})
+
+
+# User Edit
+@login_required
+def user_edit(request, user_id):
+    from .forms import UserEditForm
+    
+    user = get_object_or_404(User, id=user_id)
+    
+    if request.method == "POST":
+        form = UserEditForm(request.POST, instance=user)
+        if form.is_valid():
+            user = form.save()
+            
+            contact_number = request.POST.get("contact_number", "")
+            role_id = request.POST.get("designation")
+            
+            profile = Profile.objects.get(user=user)
+            profile.contact_number = contact_number
+            
+            if role_id:
+                profile.designation = Role.objects.get(id=role_id)
+            
+            profile.save()
+            
+            return redirect("assets:user_list")
+    else:
+        form = UserEditForm(instance=user)
+        if hasattr(user, 'profile'):
+            form.initial['contact_number'] = user.profile.contact_number
+            form.initial['designation'] = user.profile.designation
+
+    roles = Role.objects.all()
+    return render(request, "users/user_form.html", {"form": form, "roles": roles, "title": "Edit User", "user": user})
+
+
+# User Delete
+@login_required
+def user_delete(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    
+    if request.method == "POST":
+        user.delete()
+        return redirect("assets:user_list")
+    
+    return render(request, "users/user_confirm_delete.html", {"user": user})
+
 def index(request):
     return render(request, "assets/index.html")
 
