@@ -1,0 +1,10 @@
+[project]
+name = "w2-1-menu-demo"
+version = "0.1.0"
+description = "Basic Django menu listing demo for Week 2.1"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "django>=6.0.4",
+    "django-debug-toolbar>=6.3.0",
+]
