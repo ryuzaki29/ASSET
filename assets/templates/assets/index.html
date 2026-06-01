@@ -1,0 +1,153 @@
+{% extends "assets/base.html" %}
+
+{% block title %}RAYMART | Home{% endblock %}
+
+{% block extra_style %}
+<style>
+    /* Aligning with your Roles List color palette */
+    :root {
+        --brand-maroon: #801533;
+        --brand-green: #005941;
+        --brand-slate: #6c757d;
+        --light-bg: #e9ecef;
+        --brand-yellow: #ffc720;
+    }
+
+    main {
+        background-color: var(--light-bg);
+        padding-top: 30px;
+        min-height: 90vh;
+    }
+
+    /* Rounded Header Style from your Roles List */
+    .pill-header {
+        background-color: var(--brand-maroon);
+        color: white;
+        padding: 20px 40px;
+        border-radius: 20px; /* High radius as seen in your image */
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .hero-title {
+        font-weight: bold;
+        margin: 0;
+        font-size: 28px;
+    }
+
+    /* Content Card Styling */
+    .content-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid #ddd;
+        margin-bottom: 30px;
+    }
+
+    .card-strip {
+        background-color: var(--brand-maroon);
+        height: 10px;
+    }
+
+    .card-body-custom {
+        padding: 30px;
+    }
+
+    /* Button styles matching your Actions column */
+    .btn-maroon { background-color: var(--brand-maroon); color: white; border-radius: 4px; transition: 0.3s; }
+    .btn-green { background-color: var(--brand-green); color: white; border-radius: 4px; transition: 0.3s; }
+    .btn-maroon:hover, .btn-green:hover { opacity: 0.85; color: white; }
+
+    .module-icon {
+        color: var(--brand-maroon);
+        font-size: 35px;
+        margin-bottom: 15px;
+    }
+
+    .well-custom {
+        background: #fff;
+        border-left: 5px solid var(--brand-maroon);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    
+    <div class="pill-header">
+        <div>
+            <h1 class="hero-title">RAYMART Dashboard</h1>
+            <p style="margin: 0; opacity: 100; color: var(--brand-yellow); font-weight: bold;" >Real-Time Asset Yield & Management Audit Reporting Tool</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="well-custom">
+                <h3 style="color: var(--brand-maroon); margin-top: 0;">
+                    <span class="glyphicon glyphicon-info-sign"></span> System Overview
+                </h3>
+                <p>The <strong>RAYMART</strong> platform ensures operational excellence by providing full visibility into asset yields and custodial supply levels. Our mission is to synchronize facility demand with data-backed asset availability.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 col-sm-6">
+            <div class="content-card text-center">
+                <div class="card-strip"></div>
+                <div class="card-body-custom">
+                    <div class="module-icon"><span class="glyphicon glyphicon-list-alt"></span></div>
+                    <h4 style="font-weight: bold;">Group 2</h4>
+                    <p class="small text-muted">Team Members</p>
+                    <a href="#" class="btn btn-maroon btn-block">See them</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="content-card text-center">
+                <div class="card-strip"></div>
+                <div class="card-body-custom">
+                    <div class="module-icon"><span class="glyphicon glyphicon-shopping-cart"></span></div>
+                    <h4 style="font-weight: bold;">Procurement</h4>
+                    <p class="small text-muted">Supply requisitions.</p>
+                    <a href="#" class="btn btn-green btn-block">Order Now</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="content-card text-center">
+                <div class="card-strip"></div>
+                <div class="card-body-custom">
+                    <div class="module-icon"><span class="glyphicon glyphicon-wrench"></span></div>
+                    <h4 style="font-weight: bold;">Maintenance</h4>
+                    <p class="small text-muted">Log equipment faults.</p>
+                    <a href="#" class="btn btn-maroon btn-block">Log Fault</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="content-card text-center">
+                <div class="card-strip"></div>
+                <div class="card-body-custom">
+                    <div class="module-icon"><span class="glyphicon glyphicon-stats"></span></div>
+                    <h4 style="font-weight: bold;">Reports</h4>
+                    <p class="small text-muted">Audit data analytics.</p>
+                    <a href="#" class="btn btn-green btn-block">View Data</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

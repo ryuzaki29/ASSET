@@ -1,0 +1,217 @@
+{% extends "assets/base.html" %}
+{% load static %}
+
+{% block title %}Delete User - Confirmation{% endblock %}
+
+{% block extra_style %}
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: linear-gradient(to bottom right, #faf5f0, #f5ede4);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    main {
+        padding: 30px;
+        min-height: 100vh;
+    }
+
+    /* BACK BUTTON */
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        color: #8a1538;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+        color: #a01c4a;
+        transform: translateX(-4px);
+    }
+
+    /* CONFIRMATION CONTAINER */
+    .confirm-container {
+        background: white;
+        border-radius: 18px;
+        padding: 40px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        border: 2px solid #dc2626;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .confirm-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 30px;
+    }
+
+    .confirm-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #fee2e2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #dc2626;
+        font-size: 32px;
+    }
+
+    .confirm-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #6b0f28;
+        margin: 0;
+    }
+
+    /* WARNING MESSAGE */
+    .warning-message {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 24px;
+        color: #7f1d1d;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    /* USER INFO */
+    .user-info {
+        background: #f9f5ff;
+        border-left: 4px solid #8a1538;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 30px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+    }
+
+    .info-label {
+        font-weight: 700;
+        color: #6b0f28;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        color: #8a1538;
+        font-weight: 600;
+    }
+
+    /* ACTION BUTTONS */
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-delete {
+        flex: 1;
+        padding: 14px 24px;
+        background: #dc2626;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-delete:hover {
+        background: #b91c1c;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+    }
+
+    .btn-cancel {
+        flex: 1;
+        padding: 14px 24px;
+        background: #f5e5e0;
+        color: #6b0f28;
+        border: 2px solid #8a1538;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-cancel:hover {
+        background: #e5d5cc;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'assets:user_list' %}" class="back-button">
+    <i class="bi bi-arrow-left"></i> Back to Users
+</a>
+
+<div class="confirm-container">
+    <div class="confirm-header">
+        <div class="confirm-icon">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <div>
+            <h1>Delete User?</h1>
+        </div>
+    </div>
+
+    <div class="warning-message">
+        <strong>⚠️ Warning:</strong> This action cannot be undone. Deleting this user will permanently remove all associated data.
+    </div>
+
+    <div class="user-info">
+        <div class="info-row">
+            <span class="info-label">Name</span>
+            <span class="info-value">{{ user.first_name }} {{ user.last_name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ user.email }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Username</span>
+            <span class="info-value">{{ user.username }}</span>
+        </div>
+    </div>
+
+    <form method="post" class="action-buttons">
+        {% csrf_token %}
+        <button type="submit" class="btn-delete">
+            <i class="bi bi-trash"></i> Delete User
+        </button>
+        <a href="{% url 'assets:user_list' %}" class="btn-cancel">
+            <i class="bi bi-x-circle"></i> Cancel
+        </a>
+    </form>
+</div>
+
+{% endblock %}

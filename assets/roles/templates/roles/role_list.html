@@ -1,0 +1,210 @@
+<!-- Read All Roles -->
+{% extends "assets/base.html" %}
+
+{% block title %}Role List{% endblock %}
+
+{% block extra_style %}
+<style>
+    * { box-sizing: border-box; }
+
+    body {
+        background: #e9eeee;
+        font-family: 'Montserrat', Arial, Helvetica, sans-serif !important;
+    }
+
+    main {
+        padding: 30px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding: 24px;
+        border-radius: 18px;
+        background: #8a1538;
+        color: white;
+        box-shadow: 0 10px 25px rgba(224, 239, 243, 0.25);
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 700;
+    }
+
+    .create-btn {
+        padding: 10px 20px;
+        background: white;
+        color: #8a1538;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .create-btn:hover {
+        background: #ffcc33;
+        color: #8a1538;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .table-wrapper {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        border: 1px solid #dee2e6;
+        width: 100%;
+    }
+
+    .table {
+        width: 100%;
+        margin: 0;
+    }
+
+    .table thead {
+        background: #8a1538!important;
+        color: white;
+    }
+
+    .table thead th {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        padding: 14px 16px;
+        border: none;
+        background: #8a1538!important;
+        color: white;
+    }
+
+    .table tbody td {
+        padding: 8px 16px;
+        vertical-align: middle;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .table tbody tr:hover {
+        background-color: #fdf4f6;
+    }
+
+    .btn-view {
+        background-color: #8a1538;
+        color: white;
+        border: none;
+        transition: background-color 0.25s ease;
+    }
+
+    .btn-view:hover {
+        background-color: #6e102c;
+        color: white;
+    }
+
+    .btn-edit {
+        background-color: #00573f;
+        color: white;
+        border: none;
+        transition: background-color 0.25s ease;
+    }
+
+    .btn-edit:hover {
+        background-color: #00291E;
+        color: white;
+    }
+
+    .btn-delete {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        transition: background-color 0.25s ease;
+    }
+
+    .btn-delete:hover {
+        background-color: #8a1538;
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 70px 20px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(224, 239, 243, 0.25);
+        border: 1px solid #8a1538;
+    }
+
+    .empty-state h2 { color: #8a1538; margin-bottom: 10px; }
+    .empty-state p { color: #78716c; }
+
+    @media (max-width: 640px) {
+        main { padding: 18px; }
+        .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .page-header h1 { font-size: 28px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Roles List</h1>
+    </div>
+    <a href="{% url 'roles:role_create' %}" class="create-btn">Add Role</a>
+</div>
+
+{% if roles %}
+
+<div class="table-wrapper">
+    <table class="table table-bordered mb-0">
+        <thead>
+            <tr>
+                <th>Role Name</th>
+                <th>Role Code</th>
+                <th>Description</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for role in roles %}
+            <tr>
+                <td>{{ role.name }}</td>
+                <td>{{ role.code }}</td>
+                <td>{{ role.description|default:"—" }}</td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="{% url 'roles:role_detail' role.id %}" class="btn btn-sm btn-view" title="View">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'roles:role_update' role.id %}" class="btn btn-sm btn-edit" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'roles:role_delete' role.id %}" class="btn btn-sm btn-delete" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% else %}
+
+<div class="empty-state">
+    <h2>No Roles Available</h2>
+    <p>No roles have been added to the system yet.</p>
+</div>
+
+{% endif %}
+
+{% endblock %}

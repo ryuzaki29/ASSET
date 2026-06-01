@@ -1,0 +1,440 @@
+{% extends "assets/base.html" %}
+
+{% block title %}Assets{% endblock %}
+
+{% block extra_style %}
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: linear-gradient(to bottom right, #fff7f9, #fff1f4);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    main {
+        padding: 30px;
+        min-height: 100vh;
+    }
+
+    /* PAGE CONTAINER */
+    .page-container {
+        max-width: 1400px;
+        margin: auto;
+    }
+
+    /* HEADER */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        padding: 30px;
+        border-radius: 24px;
+        background: linear-gradient(135deg, #8a1538, #6d102c);
+        color: white;
+        box-shadow: 0 12px 32px rgba(138, 21, 56, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::after {
+        content: "";
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 220px;
+        height: 220px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 50%;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 36px;
+        font-weight: 700;
+    }
+
+    .asset-count {
+        margin-top: 8px;
+        opacity: 0.92;
+        font-size: 15px;
+        letter-spacing: 0.3px;
+    }
+
+    /* ACTION BUTTON */
+    .create-btn {
+        padding: 14px 22px;
+        background: white;
+        color: #8a1538;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        z-index: 1;
+    }
+
+    .create-btn:hover {
+        background: #fff1f4;
+        transform: translateY(-2px);
+    }
+
+    /* GRID */
+    .asset-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+    }
+
+    /* CARD */
+    .asset-card {
+        position: relative;
+        overflow: hidden;
+        background: white;
+        border-radius: 22px;
+        padding: 24px;
+        transition: all 0.25s ease;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        border: 1px solid #e8b8c5;
+    }
+
+    .asset-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(to right, #8a1538, #b32552);
+    }
+
+    .asset-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 36px rgba(138, 21, 56, 0.14);
+    }
+
+    /* TITLE */
+    .asset-title {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .asset-title a {
+        text-decoration: none;
+        color: #5c1025;
+        transition: 0.2s ease;
+    }
+
+    .asset-title a:hover {
+        color: #8a1538;
+    }
+
+    /* TYPE BADGE */
+    .asset-type {
+        display: inline-block;
+        margin-top: 14px;
+        padding: 7px 14px;
+        border-radius: 999px;
+        background: #fff1f4;
+        color: #8a1538;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        border: 1px solid #e8b8c5;
+    }
+
+    /* INFO */
+    .asset-info {
+        margin-top: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #8b5c6b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .value {
+        color: #4a1021;
+        font-weight: 700;
+        font-size: 15px;
+    }
+
+    /* STATUS */
+    .status {
+        padding: 7px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-maintenance {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    /* ACTIONS */
+    .card-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .btn {
+        flex: 1;
+        text-align: center;
+        padding: 12px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 700;
+        transition: all 0.25s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(to right, #8a1538, #6d102c);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        opacity: 0.95;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: #fff7f9;
+        border: 1px solid #e8b8c5;
+        color: #8a1538;
+    }
+
+    .btn-secondary:hover {
+        background: #fff1f4;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+        text-align: center;
+        padding: 80px 24px;
+        background: white;
+        border-radius: 24px;
+        border: 1px solid #e8b8c5;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    .empty-state h2 {
+        color: #8a1538;
+        margin-bottom: 12px;
+        font-size: 28px;
+    }
+
+    .empty-state p {
+        color: #8b5c6b;
+        font-size: 15px;
+        margin-bottom: 24px;
+    }
+
+    /* PAGINATION */
+    .pagination {
+        margin-top: 42px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .pagination a,
+    .pagination span {
+        padding: 11px 16px;
+        border-radius: 12px;
+        background: white;
+        border: 1px solid #e8b8c5;
+        text-decoration: none;
+        color: #8a1538;
+        font-weight: 700;
+        transition: 0.2s ease;
+    }
+
+    .pagination a:hover {
+        background: #8a1538;
+        color: white;
+    }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+
+        main {
+            padding: 18px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 30px;
+        }
+
+        .asset-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+
+    <!-- HEADER -->
+    <div class="page-header">
+
+        <div>
+            <h1>Asset Inventory</h1>
+
+            <div class="asset-count">
+                Total Registered Assets: {{ assets|length }}
+            </div>
+        </div>
+
+        <a href="{% url 'assets:asset_create' %}" class="create-btn">
+            + Add Asset
+        </a>
+
+    </div>
+
+    {% if assets %}
+
+    <!-- GRID -->
+    <div class="asset-grid">
+
+        {% for asset in assets %}
+        <div class="asset-card">
+
+            <!-- TITLE -->
+            <h2 class="asset-title">
+                <a href="{% url 'assets:asset_detail' asset.id %}">
+                    {{ asset.name }}
+                </a>
+            </h2>
+
+            <!-- TYPE -->
+            <div class="asset-type">
+                {{ asset.get_asset_type_display }}
+            </div>
+
+            <!-- INFO -->
+            <div class="asset-info">
+
+                <div class="info-row">
+                    <span class="label">Asset ID</span>
+                    <span class="value">#{{ asset.id }}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Category</span>
+                    <span class="value">{{ asset.category }}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Quantity</span>
+                    <span class="value">{{ asset.quantity }}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Status</span>
+
+                    <span class="status
+                        {% if asset.status == 'Active' %}
+                            status-active
+                        {% elif asset.status == 'Inactive' %}
+                            status-inactive
+                        {% else %}
+                            status-maintenance
+                        {% endif %}
+                    ">
+                        {{ asset.status }}
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="card-actions">
+
+                <a href="{% url 'assets:asset_detail' asset.id %}"
+                   class="btn btn-primary">
+                    View Details
+                </a>
+
+                <a href="{% url 'assets:asset_edit' asset.id %}"
+                   class="btn btn-secondary">
+                    Edit
+                </a>
+
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state">
+
+        <h2>No Assets Available</h2>
+
+        <p>
+            No assets have been added to the inventory system yet.
+        </p>
+
+        <a href="{% url 'assets:asset_create' %}" class="create-btn">
+            + Create First Asset
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
