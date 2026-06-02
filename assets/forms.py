@@ -5,18 +5,24 @@ from django.contrib.auth.models import User
 class UserRegistrationForm(forms.ModelForm):
 
     password = forms.CharField(
-        widget=forms.PasswordInput,
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
         label="Password"
     )
 
     password2 = forms.CharField(
-        widget=forms.PasswordInput,
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
         label="Confirm Password"
     )
 
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
@@ -38,6 +44,12 @@ class UserRegistrationForm(forms.ModelForm):
 class UserEditForm(forms.ModelForm):
     """Form for editing user information"""
     
+    username = forms.CharField(
+        max_length=150,
+        required=True,
+        label="Username"
+    )
+    
     contact_number = forms.CharField(
         max_length=20,
         required=False,
@@ -52,15 +64,22 @@ class UserEditForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'is_active']
+        fields = ['username', 'first_name', 'last_name', 'email']
         widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from assets.roles.models import Role
         self.fields['designation'].queryset = Role.objects.all()
+    
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        # Allow the current user's username, but check if it's taken by others
+        if User.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("That username is already taken. Please choose a different one.")
+        return username
