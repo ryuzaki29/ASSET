@@ -2,10 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegistrationForm
+from .forms import UserRegistrationForm, UserEditForm 
 from .models import Asset, Profile
 from assets.roles.models import Role
-
 
 def landing(request):
     return render(request, "assets/landing.html")
@@ -23,14 +22,12 @@ def register_view(request):
 
             Profile.objects.create(
                 user=user,
-                contact_number=request.POST.get("contact_number"),
                 designation=None  # No designation for new users
             )
 
             return redirect("assets:landing")
 
     return render(request, "users/register.html", {"form": form})
-
 
 # User Profile 
 @login_required
@@ -101,54 +98,47 @@ def user_list(request):
 # User Create
 @login_required
 def user_create(request):
-    # Only superusers and admin/executive can create users
     if not request.user.is_superuser:
-        current_user_profile = getattr(request.user, 'profile', None)
-        current_designation = current_user_profile.designation if current_user_profile else None
-        
-        if not current_designation:
-            return HttpResponseForbidden("You don't have permission to create users.")
-        
-        current_role_name = str(current_designation.name).lower()
-        admin_roles = ['administrator', 'executive']
-        
-        if current_role_name not in admin_roles:
-            return HttpResponseForbidden("Only Administrator and Executive can create users.")
-    
+        profile = getattr(request.user, 'profile', None)
+        if not profile or profile.designation is None:
+            return HttpResponseForbidden("Not allowed.")
+
+        if profile.designation.name.lower() not in ['administrator', 'executive']:
+            return HttpResponseForbidden("Not allowed.")
+
+    form = UserRegistrationForm(request.POST or None)
+
     if request.method == "POST":
-        form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data["password"])
-            user.is_staff = True  # Set new accounts as staff
+            user.is_staff = True
             user.save()
 
+            # now FIXED role handling
             role_id = request.POST.get("designation")
-            if role_id:
-                role = Role.objects.get(id=role_id)
-            else:
-                role = None
 
-            contact_number = request.POST.get("contact_number", "")
-            
+            role = Role.objects.get(id=role_id) if role_id else None
+
             Profile.objects.create(
                 user=user,
-                contact_number=contact_number,
                 designation=role
             )
 
             return redirect("assets:user_list")
-    else:
-        form = UserRegistrationForm()
 
     roles = Role.objects.all()
-    return render(request, "users/user_form.html", {"form": form, "roles": roles, "title": "Create User", "is_admin_editing": True})
 
+    return render(request, "users/user_form.html", {
+        "form": form,
+        "roles": roles,
+        "title": "Create User",
+        "is_admin_editing": True
+    })
 
 # User Edit
 @login_required
 def user_edit(request, user_id):
-    from .forms import UserEditForm
     
     user_to_edit = get_object_or_404(User, id=user_id)
     is_admin_editing = False
@@ -178,11 +168,9 @@ def user_edit(request, user_id):
         if form.is_valid():
             user_to_edit = form.save()
             
-            contact_number = request.POST.get("contact_number", "")
             role_id = request.POST.get("designation")
             
             profile, created = Profile.objects.get_or_create(user=user_to_edit)
-            profile.contact_number = contact_number
             
             # Only admin/executive/superuser can change designation, staff cannot
             if is_admin_editing and role_id:
@@ -194,7 +182,7 @@ def user_edit(request, user_id):
     else:
         form = UserEditForm(instance=user_to_edit)
         profile, created = Profile.objects.get_or_create(user=user_to_edit)
-        form.initial['contact_number'] = profile.contact_number
+
         if profile.designation:
             form.initial['designation'] = profile.designation
 
@@ -283,3 +271,5 @@ def asset_edit(request, asset_id):
         "type_choices": Asset.TYPE_CHOICES
     }
     return render(request, "assets/edit_asset.html", context)
+
+

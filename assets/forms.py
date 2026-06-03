@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
+from assets.roles.models import Role
 
 
 class UserRegistrationForm(forms.ModelForm):
@@ -40,26 +41,14 @@ class UserRegistrationForm(forms.ModelForm):
 
         return cleaned_data
 
-
 class UserEditForm(forms.ModelForm):
-    """Form for editing user information"""
-    
-    username = forms.CharField(
-        max_length=150,
-        required=True,
-        label="Username"
-    )
-    
-    contact_number = forms.CharField(
-        max_length=20,
-        required=False,
-        label="Phone Number"
-    )
-    
+
     designation = forms.ModelChoiceField(
-        queryset=None,
+        queryset=Role.objects.all(),
         required=False,
-        label="Role/Designation"
+        label="Role/Designation",
+        empty_label="— No Role —",
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
 
     class Meta:
@@ -72,14 +61,11 @@ class UserEditForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        from assets.roles.models import Role
-        self.fields['designation'].queryset = Role.objects.all()
-    
     def clean_username(self):
         username = self.cleaned_data.get("username")
-        # Allow the current user's username, but check if it's taken by others
-        if User.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+        qs = User.objects.filter(username=username)
+        if self.instance and self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
             raise forms.ValidationError("That username is already taken. Please choose a different one.")
         return username

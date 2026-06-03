@@ -96,11 +96,34 @@
         background-color: #fdf4f6;
     }
 
+    .role-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 16px;
+        background: #f5e5e0;
+        color: #8a1538;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
     .btn-view {
         background-color: #8a1538;
         color: white;
         border: none;
         transition: background-color 0.25s ease;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
 
     .btn-view:hover {
@@ -113,6 +136,14 @@
         color: white;
         border: none;
         transition: background-color 0.25s ease;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
 
     .btn-edit:hover {
@@ -125,6 +156,14 @@
         color: white;
         border: none;
         transition: background-color 0.25s ease;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
 
     .btn-delete:hover {
@@ -168,8 +207,8 @@
         <thead>
             <tr>
                 <th>Role Name</th>
-                <th>Role Code</th>
-                <th>Description</th>
+                <th class="text-center">Role Code</th>
+                <th class="text-center">Description</th>
                 <th class="text-center">Actions</th>
             </tr>
         </thead>
@@ -177,10 +216,10 @@
             {% for role in roles %}
             <tr>
                 <td>{{ role.name }}</td>
-                <td>{{ role.code }}</td>
+                <td class="text-center"><span class="role-badge">{{ role.code }}</span></td>
                 <td>{{ role.description|default:"—" }}</td>
                 <td class="text-center">
-                    <div class="d-flex justify-content-center gap-2">
+                    <div class="d-flex action-buttons justify-content-center gap-2">
                         <a href="{% url 'roles:role_detail' role.id %}" class="btn btn-sm btn-view" title="View">
                             <i class="bi bi-eye"></i>
                         </a>
