@@ -115,20 +115,35 @@
 <div class="form-wrapper">
     <form method="POST">
         {% csrf_token %}
-
+        
         <div class="mb-3">
-            <label for="role_name" class="form-label">Role Name</label>
-            <input type="text" id="role_name" name="name" value="{{ object.name }}" class="form-control" required>
+            {{ form.name.label_tag }}
+            {{ form.name }}
+            {% for error in form.name.errors %}
+                <div class="alert alert-danger py-2">
+                    {{ error }}
+                </div>
+            {% endfor %}
         </div>
 
         <div class="mb-3">
-            <label for="role_code" class="form-label">Role Code</label>
-            <input type="text" id="role_code" name="code" value="{{ object.code }}" class="form-control" required>
+            {{ form.code.label_tag }}
+            {{ form.code }}
+            {% for error in form.code.errors %}
+                <div class="alert alert-danger py-2">
+                    {{ error }}
+                </div>
+            {% endfor %}
         </div>
 
-        <div class="mb-4">
-            <label for="role_description" class="form-label">Role Description</label>
-            <textarea id="role_description" name="description" class="form-control" rows="3">{{ object.description }}</textarea>
+        <div class="mb-3">
+            {{ form.description.label_tag }}
+            {{ form.description }}
+            {% for error in form.description.errors %}
+                <div class="alert alert-danger py-2">
+                    {{ error }}
+                </div>
+            {% endfor %}
         </div>
 
         <div class="d-flex gap-2">
