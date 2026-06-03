@@ -5,7 +5,7 @@ from . import views
 app_name = "assets"
 
 urlpatterns = [
-    path("", views.index, name="landing"),
+    path("", views.IndexView.as_view(), name="landing"),
     path("asset/<int:asset_id>/", views.asset_detail, name="asset_detail"),
     path("asset/<int:asset_id>/edit/", views.asset_edit, name="asset_edit"),
     path("create/", views.asset_create, name="asset_create"),
