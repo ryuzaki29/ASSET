@@ -207,22 +207,20 @@
     <form method="post" novalidate>
         {% csrf_token %}
 
-        <!-- Username (create only) -->
-        {% if not user %}
-            <div class="form-group {% if form.username.errors %}has-error{% endif %}">
-                <label for="{{ form.username.id_for_label }}">
-                    Username <span class="required">*</span>
-                </label>
-                {{ form.username }}
-                {% if form.username.errors %}
-                    <ul class="errorlist">
-                        {% for error in form.username.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
-        {% endif %}
+        <!-- Username -->
+        <div class="form-group {% if form.username.errors %}has-error{% endif %}">
+            <label for="{{ form.username.id_for_label }}">
+                Username <span class="required">*</span>
+            </label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <ul class="errorlist">
+                    {% for error in form.username.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
 
         <!-- First Name -->
         <div class="form-group {% if form.first_name.errors %}has-error{% endif %}">
@@ -270,7 +268,7 @@
         </div>
 
         <!-- Password (create only) -->
-        {% if not user %}
+        {% if "Create" in title %}
             <div class="form-group {% if form.password.errors %}has-error{% endif %}">
                 <label for="{{ form.password.id_for_label }}">
                     Password <span class="required">*</span>
@@ -301,37 +299,19 @@
             </div>
         {% endif %}
 
-        <!-- Phone Number -->
-        <div class="form-group">
-            <label for="contact_number">Phone Number</label>
-            <input type="text" id="contact_number" name="contact_number" 
-                   value="{% if form.initial.contact_number %}{{ form.initial.contact_number }}{% endif %}">
-        </div>
-
-        <!-- Role/Designation -->
-        <div class="form-group">
-            <label for="designation">Role / Designation</label>
-            <select id="designation" name="designation">
-                <option value="">-- Select a Role --</option>
-                {% for role in roles %}
-                    <option value="{{ role.id }}" 
-                            {% if form.initial.designation == role.id %}selected{% endif %}>
-                        {{ role.name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Status (edit only) -->
-        {% if user %}
+        <!-- Role/Designation (Only admin/superuser can change role) -->
+        {% if is_admin_editing or request.user.is_superuser %}
             <div class="form-group">
-                <div class="checkbox-group">
-                    <input type="checkbox" id="is_active" name="is_active" 
-                           {% if form.instance.is_active %}checked{% endif %}>
-                    <label for="is_active" style="margin: 0; text-transform: capitalize;">
-                        Account is Active
-                    </label>
-                </div>
+                <label for="designation">Role / Designation</label>
+                <select id="designation" name="designation">
+                    <option value="">-- Select a Role --</option>
+                    {% for role in roles %}
+                        <option value="{{ role.id }}" 
+                                {% if form.initial.designation == role.id %}selected{% endif %}>
+                            {{ role.name }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
         {% endif %}
 
@@ -349,10 +329,10 @@
         <!-- Buttons -->
         <div class="form-actions">
             <button type="submit" class="btn-submit">
-                <i class="bi bi-check-circle"></i> {% if user %}Update User{% else %}Create User{% endif %}
+                <i class="bi bi-check-circle"></i> {% if form.instance.pk %}Update User Entry{% else %}Add User{% endif %}
             </button>
             <a href="{% url 'assets:user_list' %}" class="btn-cancel">
-                <i class="bi bi-x-circle"></i> Cancel
+                <i class="bi bi-x-circle"></i> Cancel                                                       
             </a>
         </div>
     </form>

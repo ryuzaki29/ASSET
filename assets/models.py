@@ -1,11 +1,9 @@
 from django.db import models
-# Profile model import added (Joper)
 from django.contrib.auth.models import User
 from assets.roles.models import Role
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    contact_number = models.CharField(max_length=11)
     designation = models.ForeignKey(
         Role,
         on_delete=models.SET_NULL,
