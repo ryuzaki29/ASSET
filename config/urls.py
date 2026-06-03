@@ -3,11 +3,11 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from django.conf import settings
 
-from assets.views import landing, index
+from assets.views import IndexView, landing
 
 urlpatterns = [
     path("", landing, name="landing"),
-    path("home/", index, name="home"),
+    path("home/", IndexView.as_view(), name="home"),
     path("login/", auth_views.LoginView.as_view(), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("admin/", admin.site.urls),

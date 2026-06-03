@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.views.generic import TemplateView
 from .forms import UserRegistrationForm, UserEditForm 
 from .models import Asset, Profile
 from assets.roles.models import Role
@@ -215,8 +216,9 @@ def user_delete(request, user_id):
     
     return render(request, "users/user_confirm_delete.html", {"user": user})
 
-def index(request):
-    return render(request, "assets/index.html")
+
+class IndexView(TemplateView):
+    template_name = "assets/index.html"
 
 
 @login_required
