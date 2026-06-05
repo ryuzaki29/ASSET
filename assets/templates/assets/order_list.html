@@ -389,19 +389,29 @@
                             <label for="requestorGroup" class="form-label">Requestor Group</label>
                             <input type="text" class="form-control" id="requestorGroup" placeholder="Enter requestor group">
                         </div>
-                        <div class="mb-3">
-                            <label for="requestAssetName" class="form-label">Asset Name</label>
-                            <select class="form-select" id="requestAssetName" name="asset_id">
-                                <option value="" selected disabled>Select asset</option>
-                                {% for asset in assets %}
-                                    <option value="{{ asset.id }}">{{ asset.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="requestQuantity" class="form-label">Quantity</label>
-                            <input type="number" class="form-control" id="requestQuantity" min="1" placeholder="Enter quantity">
-                        </div>
+                        
+                            <div class="mb-3">
+                                <label class="form-label">Assets</label>
+                                <div id="assetRows">
+                                    <div class="asset-row d-flex align-items-center mb-2">
+                                        <select class="form-select asset-select" name="asset_select[]">
+                                            <option value="" selected disabled>Select asset</option>
+                                            {% for asset in assets %}
+                                                <option value="{{ asset.id }}" data-name="{{ asset.name }}" data-available="{{ asset.quantity }}">{{ asset.name }} (Available: {{ asset.quantity }})</option>
+                                            {% endfor %}
+                                        </select>
+
+                                        <input type="number" class="form-control form-control-sm asset-qty" name="asset_qty[]" min="1" value="1">
+
+                                        <button type="button" class="add-asset-btn">+</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Selected Items</label>
+                                <ul id="selectedList" class="list-group"></ul>
+                            </div>
                         <div class="mb-3">
                             <label for="requestReason" class="form-label">Reason</label>
                             <textarea class="form-control" id="requestReason" rows="3" placeholder="Describe why you need this asset"></textarea>
@@ -512,5 +522,137 @@
     {% endif %}
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var container = document.getElementById('assetRows');
+
+    function makeRow(){
+        var row = document.createElement('div');
+        row.className = 'asset-row d-flex align-items-center mb-2';
+
+        var select = document.createElement('select');
+        select.className = 'form-select asset-select';
+        select.name = 'asset_select[]';
+        var defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.selected = true;
+        defaultOpt.disabled = true;
+        defaultOpt.textContent = 'Select asset';
+        select.appendChild(defaultOpt);
+        // populate options from a template copy
+        var template = document.querySelector('#assetRows .asset-select');
+        if(template){
+            template.querySelectorAll('option').forEach(function(opt){
+                if(opt.value === '') return;
+                var o = document.createElement('option');
+                o.value = opt.value;
+                o.textContent = opt.textContent;
+                o.dataset.name = opt.dataset.name;
+                o.dataset.available = opt.dataset.available;
+                select.appendChild(o);
+            });
+        }
+
+        var qty = document.createElement('input');
+        qty.type = 'number';
+        qty.className = 'form-control form-control-sm asset-qty';
+        qty.name = 'asset_qty[]';
+        qty.min = 1;
+        qty.value = 1;
+
+        var addBtn = document.createElement('button');
+        addBtn.type = 'button';
+        addBtn.className = 'add-asset-btn';
+        addBtn.textContent = '+';
+
+        var removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-asset-btn';
+        removeBtn.textContent = '−';
+
+        row.appendChild(select);
+        row.appendChild(qty);
+        row.appendChild(addBtn);
+        row.appendChild(removeBtn);
+
+        // events for select/qty are attached; add/remove handled by delegation below
+
+        select.addEventListener('change', updateSummary);
+        qty.addEventListener('input', updateSummary);
+
+        return row;
+    }
+
+    function updateSummary(){
+        var list = document.getElementById('selectedList');
+        if(!list) return;
+        list.innerHTML = '';
+        container.querySelectorAll('.asset-row').forEach(function(r){
+            var s = r.querySelector('.asset-select');
+            var q = r.querySelector('.asset-qty');
+            if(s && s.value){
+                var name = s.options[s.selectedIndex].dataset.name || s.options[s.selectedIndex].textContent;
+                var qty = q ? q.value : '1';
+                var li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.textContent = name.replace(/\s*\(Available:.*\)$/, '');
+                var span = document.createElement('span');
+                span.textContent = 'Qty: ' + qty;
+                li.appendChild(span);
+                list.appendChild(li);
+            }
+        });
+    }
+
+    // delegated handlers for add/remove buttons so both initial and dynamic buttons work
+    container.addEventListener('click', function(e){
+        var add = e.target.closest('.add-asset-btn');
+        var rem = e.target.closest('.remove-asset-btn');
+        if(add){
+            var newRow = makeRow();
+            container.appendChild(newRow);
+            updateSummary();
+            return;
+        }
+        if(rem){
+            var row = e.target.closest('.asset-row');
+            if(!row) return;
+            if(container.children.length > 1){
+                row.remove();
+            } else {
+                var s = row.querySelector('.asset-select'); if(s) s.selectedIndex = 0;
+                var q = row.querySelector('.asset-qty'); if(q) q.value = 1;
+            }
+            updateSummary();
+            return;
+        }
+    });
+
+    // (no document-level fallback — use delegated handlers on the container only)
+
+    // ensure there's at least one row
+    (function init(){
+        if(!container.querySelector('.asset-row')){
+            container.appendChild(makeRow());
+        }
+        updateSummary();
+    })();
+
+    var requestModal = document.getElementById('requestModal');
+    if(requestModal){
+        requestModal.addEventListener('hidden.bs.modal', function(){
+            // reset to single empty row
+            container.innerHTML = '';
+            var r = makeRow();
+            container.appendChild(r);
+            updateSummary();
+            var n = document.getElementById('requestorName'); if(n) n.value = '';
+            var g = document.getElementById('requestorGroup'); if(g) g.value = '';
+            var re = document.getElementById('requestReason'); if(re) re.value = '';
+        });
+    }
+});
+</script>
 
 {% endblock %}
