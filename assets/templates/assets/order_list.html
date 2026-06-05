@@ -75,9 +75,34 @@
         transition: all 0.25s ease;
         box-shadow: 0 6px 16px rgba(0,0,0,0.12);
         z-index: 1;
+        white-space: nowrap;
     }
 
     .create-btn:hover {
+        background: #fff1f4;
+        transform: translateY(-2px);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .request-btn {
+        padding: 14px 22px;
+        background: white;
+        color: #8a1538;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        z-index: 1;
+    }
+
+    .request-btn:hover {
         background: #fff1f4;
         transform: translateY(-2px);
     }
@@ -334,10 +359,61 @@
             </div>
         </div>
 
-        <a href="{% url 'assets:asset_create' %}" class="create-btn">
-            + Add Asset
-        </a>
+        <div class="header-actions">
+            <a href="{% url 'assets:asset_create' %}" class="create-btn">
+                + Add Asset
+            </a>
 
+            <button type="button" class="request-btn" data-bs-toggle="modal" data-bs-target="#requestModal">
+                Request Asset
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Request Asset Modal -->
+    <div class="modal fade" id="requestModal" tabindex="-1" aria-labelledby="requestModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="requestModalLabel">Request Asset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="requestorName" class="form-label">Requestor Name</label>
+                            <input type="text" class="form-control" id="requestorName" placeholder="Enter requestor name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="requestorGroup" class="form-label">Requestor Group</label>
+                            <input type="text" class="form-control" id="requestorGroup" placeholder="Enter requestor group">
+                        </div>
+                        <div class="mb-3">
+                            <label for="requestAssetName" class="form-label">Asset Name</label>
+                            <select class="form-select" id="requestAssetName" name="asset_id">
+                                <option value="" selected disabled>Select asset</option>
+                                {% for asset in assets %}
+                                    <option value="{{ asset.id }}">{{ asset.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="requestQuantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="requestQuantity" min="1" placeholder="Enter quantity">
+                        </div>
+                        <div class="mb-3">
+                            <label for="requestReason" class="form-label">Reason</label>
+                            <textarea class="form-control" id="requestReason" rows="3" placeholder="Describe why you need this asset"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-bs-dismiss="modal">Close</button>
+                    <button type="button">Send Request</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     {% if assets %}
