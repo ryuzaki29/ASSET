@@ -1,14 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
-from assets.roles.models import Role
 
+# Updated Profile model
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    designation = models.ForeignKey(
-        Role,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -36,3 +33,10 @@ class Asset(models.Model):
     class Meta:
         verbose_name = "Asset"
         verbose_name_plural = "Assets"
+        
+        #Added custom permissions for asset management
+        permissions = [
+            ("view_reports", "Can View Reports"),
+            ("audit_assets", "Can Audit Assets"),
+            ("manage_inventory", "Can Manage Inventory"),
+        ]
