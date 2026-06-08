@@ -8,8 +8,8 @@
     * { box-sizing: border-box; }
 
     body {
-        background: #e9eeee;
-        font-family: 'Montserrat', Arial, Helvetica, sans-serif !important;
+        background: linear-gradient(to bottom right, #faf5f0, #f5ede4);
+        font-family: 'Montserrat', Arial, Helvetica, sans-serif;
     }
 
     main {
@@ -24,7 +24,7 @@
         margin-bottom: 30px;
         padding: 24px;
         border-radius: 18px;
-        background: #8a1538;
+        background: linear-gradient(135deg, #8a1538, #6d102c);
         color: white;
         box-shadow: 0 10px 25px rgba(224, 239, 243, 0.25);
     }
@@ -171,6 +171,17 @@
         color: white;
     }
 
+        .perm-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        margin: 3px;
+        border-radius: 16px;
+        background: #f5e5e0;
+        color: #8a1538;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
     .empty-state {
         text-align: center;
         padding: 70px 20px;
@@ -197,36 +208,44 @@
     <div>
         <h1>Roles List</h1>
     </div>
-    <a href="{% url 'roles:role_create' %}" class="create-btn">Add Role</a>
+    <a href="{% url 'roles:role_create' %}" class="create-btn">+ Add Role</a>
 </div>
 
-{% if roles %}
+{% if groups %}
 
 <div class="table-wrapper">
     <table class="table table-bordered mb-0">
         <thead>
             <tr>
                 <th>Role Name</th>
-                <th class="text-center">Role Code</th>
-                <th class="text-center">Description</th>
-                <th class="text-center">Actions</th>
+                <th>Permissions</th>
+                <th>Actions</th>
             </tr>
         </thead>
+
         <tbody>
-            {% for role in roles %}
+            {% for group in groups %}
             <tr>
-                <td>{{ role.name }}</td>
-                <td class="text-center"><span class="role-badge">{{ role.code }}</span></td>
-                <td>{{ role.description|default:"—" }}</td>
+                <td>
+                    <strong>{{ group.name }}</strong>
+                </td>
+
+                <td>
+                    {% for perm in group.permissions.all %}
+                        <span class="perm-badge">
+                            {{ perm.name }}
+                        </span>
+                    {% empty %}
+                        <span style="color:#999;">No permissions assigned</span>
+                    {% endfor %}
+                </td>
+
                 <td class="text-center">
                     <div class="d-flex action-buttons justify-content-center gap-2">
-                        <a href="{% url 'roles:role_detail' role.id %}" class="btn btn-sm btn-view" title="View">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <a href="{% url 'roles:role_update' role.id %}" class="btn btn-sm btn-edit" title="Edit">
+                        <a href="{% url 'roles:role_update' group.id %}" class="btn btn-sm btn-edit" title="Edit">
                             <i class="bi bi-pencil"></i>
                         </a>
-                        <a href="{% url 'roles:role_delete' role.id %}" class="btn btn-sm btn-delete" title="Delete">
+                        <a href="{% url 'roles:role_delete' group.id %}" class="btn btn-sm btn-delete" title="Delete">
                             <i class="bi bi-trash"></i>
                         </a>
                     </div>
@@ -240,8 +259,8 @@
 {% else %}
 
 <div class="empty-state">
-    <h2>No Roles Available</h2>
-    <p>No roles have been added to the system yet.</p>
+    <h2>No Roles Found</h2>
+    <p>Create roles first to manage permissions.</p>
 </div>
 
 {% endif %}

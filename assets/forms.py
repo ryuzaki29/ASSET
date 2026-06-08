@@ -1,6 +1,5 @@
 from django import forms
-from django.contrib.auth.models import User
-from assets.roles.models import Role
+from django.contrib.auth.models import User, Group
 
 
 class UserRegistrationForm(forms.ModelForm):
@@ -36,36 +35,30 @@ class UserRegistrationForm(forms.ModelForm):
         password = cleaned_data.get("password")
         password2 = cleaned_data.get("password2")
 
-        if password != password2:
-            raise forms.ValidationError("Passwords do not match.")
+        if password and password2 and password != password2:
+            self.add_error("password2", "Passwords do not match.")
 
         return cleaned_data
 
 class UserEditForm(forms.ModelForm):
-
-    designation = forms.ModelChoiceField(
-        queryset=Role.objects.all(),
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.none(),
         required=False,
-        label="Role/Designation",
-        empty_label="— No Role —",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        label="Roles",
+        widget=forms.CheckboxSelectMultiple
     )
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email']
-        widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-        }
+        fields = [
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'groups',
+        ]
 
-    def clean_username(self):
-        username = self.cleaned_data.get("username")
-        qs = User.objects.filter(username=username)
-        if self.instance and self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-        if qs.exists():
-            raise forms.ValidationError("That username is already taken. Please choose a different one.")
-        return username
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['groups'].queryset = Group.objects.order_by('name')
