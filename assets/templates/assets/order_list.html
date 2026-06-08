@@ -380,14 +380,15 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form id="requestForm" method="post" action="{% url 'assets:request_create' %}">
+                        {% csrf_token %}
                         <div class="mb-3">
                             <label for="requestorName" class="form-label">Requestor Name</label>
-                            <input type="text" class="form-control" id="requestorName" placeholder="Enter requestor name">
+                            <input type="text" class="form-control" id="requestorName" name="requestorName" placeholder="Enter requestor name">
                         </div>
                         <div class="mb-3">
                             <label for="requestorGroup" class="form-label">Requestor Group</label>
-                            <input type="text" class="form-control" id="requestorGroup" placeholder="Enter requestor group">
+                            <input type="text" class="form-control" id="requestorGroup" name="requestorGroup" placeholder="Enter requestor group">
                         </div>
                         
                             <div class="mb-3">
@@ -404,6 +405,7 @@
                                         <input type="number" class="form-control form-control-sm asset-qty" name="asset_qty[]" min="1" value="1">
 
                                         <button type="button" class="add-asset-btn">+</button>
+                                        <div class="invalid-feedback" style="display:none;"></div>
                                     </div>
                                 </div>
                             </div>
@@ -414,13 +416,13 @@
                             </div>
                         <div class="mb-3">
                             <label for="requestReason" class="form-label">Reason</label>
-                            <textarea class="form-control" id="requestReason" rows="3" placeholder="Describe why you need this asset"></textarea>
+                            <textarea class="form-control" id="requestReason" name="requestReason" rows="3" placeholder="Describe why you need this asset"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" data-bs-dismiss="modal">Close</button>
-                    <button type="button">Send Request</button>
+                    <button id="submitRequestBtn" type="submit" form="requestForm" class="btn-primary">Send Request</button>
                 </div>
             </div>
         </div>
@@ -527,6 +529,26 @@
 document.addEventListener('DOMContentLoaded', function(){
     var container = document.getElementById('assetRows');
 
+    function attachRowEvents(row){
+        var select = row.querySelector('.asset-select');
+        var qty = row.querySelector('.asset-qty');
+
+        if(select){
+            select.addEventListener('change', function(){
+                syncQtyMax(row);
+                validateRow(row);
+                updateSummary();
+            });
+        }
+
+        if(qty){
+            qty.addEventListener('input', function(){
+                validateRow(row);
+                updateSummary();
+            });
+        }
+    }
+
     function makeRow(){
         var row = document.createElement('div');
         row.className = 'asset-row d-flex align-items-center mb-2';
@@ -560,6 +582,7 @@ document.addEventListener('DOMContentLoaded', function(){
         qty.name = 'asset_qty[]';
         qty.min = 1;
         qty.value = 1;
+        qty.max = 999999;
 
         var addBtn = document.createElement('button');
         addBtn.type = 'button';
@@ -571,24 +594,119 @@ document.addEventListener('DOMContentLoaded', function(){
         removeBtn.className = 'remove-asset-btn';
         removeBtn.textContent = '−';
 
+        var error = document.createElement('div');
+        error.className = 'invalid-feedback';
+        error.style.display = 'none';
+        error.textContent = '';
+
         row.appendChild(select);
         row.appendChild(qty);
         row.appendChild(addBtn);
         row.appendChild(removeBtn);
+        row.appendChild(error);
 
-        // events for select/qty are attached; add/remove handled by delegation below
-
-        select.addEventListener('change', updateSummary);
-        qty.addEventListener('input', updateSummary);
-
+        attachRowEvents(row);
         return row;
+    }
+
+    function getSelectedAssetCounts(){
+        var counts = {};
+        container.querySelectorAll('.asset-select').forEach(function(select){
+            if(select && select.value){
+                counts[select.value] = (counts[select.value] || 0) + 1;
+            }
+        });
+        return counts;
+    }
+
+    function refreshSelectOptions(){
+        var selectedCounts = getSelectedAssetCounts();
+        container.querySelectorAll('.asset-select').forEach(function(select){
+            var currentValue = select.value;
+            select.querySelectorAll('option').forEach(function(opt){
+                if(!opt.value) return;
+                if(opt.value === currentValue){
+                    opt.disabled = false;
+                } else {
+                    opt.disabled = selectedCounts[opt.value] > 0;
+                }
+            });
+        });
+    }
+
+    function syncQtyMax(row){
+        var select = row.querySelector('.asset-select');
+        var qty = row.querySelector('.asset-qty');
+        if(!select || !qty){
+            return;
+        }
+        var selectedOption = select.options[select.selectedIndex];
+        if(selectedOption && select.value){
+            var available = parseInt(selectedOption.dataset.available || '0', 10);
+            qty.max = available > 0 ? available : 1;
+            if(parseInt(qty.value || '0', 10) > available){
+                qty.value = available > 0 ? available : 1;
+            }
+        } else {
+            qty.removeAttribute('max');
+            qty.max = 999999;
+        }
+    }
+
+    function validateRow(row){
+        var select = row.querySelector('.asset-select');
+        var qty = row.querySelector('.asset-qty');
+        var error = row.querySelector('.invalid-feedback');
+        if(!select || !qty || !error){
+            return true;
+        }
+
+        var selectedOption = select.options[select.selectedIndex];
+        if(!select.value || !selectedOption){
+            qty.classList.remove('is-invalid');
+            error.style.display = 'none';
+            return true;
+        }
+
+        var selectedCounts = getSelectedAssetCounts();
+        if(selectedCounts[select.value] > 1){
+            qty.classList.add('is-invalid');
+            error.textContent = 'This asset has already been selected in another row.';
+            error.style.display = 'block';
+            return false;
+        }
+
+        var available = parseInt(selectedOption.dataset.available || '0', 10);
+        var requested = parseInt(qty.value || '0', 10);
+        if(requested < 1){
+            requested = 1;
+            qty.value = 1;
+        }
+
+        if(requested > available){
+            qty.classList.add('is-invalid');
+            error.textContent = 'Requested quantity cannot exceed available amount (' + available + ').';
+            error.style.display = 'block';
+            qty.value = available > 0 ? available : 1;
+            return false;
+        }
+
+        qty.classList.remove('is-invalid');
+        error.style.display = 'none';
+        return true;
     }
 
     function updateSummary(){
         var list = document.getElementById('selectedList');
         if(!list) return;
         list.innerHTML = '';
+        var valid = true;
+
         container.querySelectorAll('.asset-row').forEach(function(r){
+            syncQtyMax(r);
+            if(!validateRow(r)){
+                valid = false;
+            }
             var s = r.querySelector('.asset-select');
             var q = r.querySelector('.asset-qty');
             if(s && s.value){
@@ -603,6 +721,11 @@ document.addEventListener('DOMContentLoaded', function(){
                 list.appendChild(li);
             }
         });
+
+        var submitBtn = document.getElementById('submitRequestBtn');
+        if(submitBtn){
+            submitBtn.disabled = !valid;
+        }
     }
 
     // delegated handlers for add/remove buttons so both initial and dynamic buttons work
@@ -612,6 +735,7 @@ document.addEventListener('DOMContentLoaded', function(){
         if(add){
             var newRow = makeRow();
             container.appendChild(newRow);
+            refreshSelectOptions();
             updateSummary();
             return;
         }
@@ -624,6 +748,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 var s = row.querySelector('.asset-select'); if(s) s.selectedIndex = 0;
                 var q = row.querySelector('.asset-qty'); if(q) q.value = 1;
             }
+            refreshSelectOptions();
             updateSummary();
             return;
         }
@@ -631,13 +756,21 @@ document.addEventListener('DOMContentLoaded', function(){
 
     // (no document-level fallback — use delegated handlers on the container only)
 
-    // ensure there's at least one row
-    (function init(){
-        if(!container.querySelector('.asset-row')){
+    function init(){
+        var existingRows = container.querySelectorAll('.asset-row');
+        if(existingRows.length === 0){
             container.appendChild(makeRow());
+        } else {
+            existingRows.forEach(function(r){
+                // attach validation listeners to server-rendered rows
+                attachRowEvents(r);
+            });
         }
+        refreshSelectOptions();
         updateSummary();
-    })();
+    }
+
+    init();
 
     var requestModal = document.getElementById('requestModal');
     if(requestModal){

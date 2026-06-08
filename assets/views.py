@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from .forms import UserRegistrationForm, UserEditForm 
-from .models import Asset, Profile
+from .models import Asset, Profile, AssetRequest, AssetRequestItem
 from assets.roles.models import Role
+from django.db import transaction
 
 def landing(request):
     return render(request, "assets/landing.html")
@@ -273,5 +274,93 @@ def asset_edit(request, asset_id):
         "type_choices": Asset.TYPE_CHOICES
     }
     return render(request, "assets/edit_asset.html", context)
+
+
+@login_required
+def request_list(request):
+    """List requests that are currently 'For Approval' and show completed transactions."""
+    pending = AssetRequest.objects.filter(status=AssetRequest.FOR_APPROVAL).prefetch_related('items__asset').order_by('-created_at')
+    history = AssetRequest.objects.exclude(status=AssetRequest.FOR_APPROVAL).prefetch_related('items__asset').order_by('-created_at')
+    context = {
+        'requests': pending,
+        'history': history
+    }
+    return render(request, 'assets/request_list.html', context)
+
+
+@login_required
+def request_create(request):
+    if request.method == "POST":
+        # Collect basic fields
+        requestor_name = request.POST.get('requestorName') or request.POST.get('requestor_name')
+        requestor_group = request.POST.get('requestorGroup') or request.POST.get('requestor_group')
+        reason = request.POST.get('requestReason') or request.POST.get('request_reason')
+
+        with transaction.atomic():
+            ar = AssetRequest.objects.create(
+                requestor_name=requestor_name or (request.user.get_full_name() or request.user.username),
+                requestor_group=requestor_group or "",
+                reason=reason or "",
+                status=AssetRequest.FOR_APPROVAL,
+                created_by=request.user
+            )
+
+            # asset_select[] and asset_qty[] come from the modal form; use getlist
+            asset_ids = request.POST.getlist('asset_select[]') or request.POST.getlist('asset_select')
+            qtys = request.POST.getlist('asset_qty[]') or request.POST.getlist('asset_qty')
+
+            # pair and create items
+            for i, a_id in enumerate(asset_ids):
+                try:
+                    asset = Asset.objects.get(id=int(a_id))
+                except Exception:
+                    continue
+                try:
+                    q = int(qtys[i]) if i < len(qtys) and qtys[i] else 1
+                except Exception:
+                    q = 1
+                if q <= 0:
+                    q = 1
+                AssetRequestItem.objects.create(request=ar, asset=asset, quantity=q)
+
+        return redirect('assets:asset_list')
+
+    return redirect('assets:asset_list')
+
+
+@login_required
+def request_approve(request, request_id):
+    if request.method != 'POST':
+        return redirect('assets:request_list')
+    ar = get_object_or_404(AssetRequest, id=request_id)
+
+    if ar.status == AssetRequest.FOR_APPROVAL:
+        with transaction.atomic():
+            for it in ar.items.select_related('asset'):
+                try:
+                    asset = it.asset
+                    current_qty = int(asset.quantity or 0)
+                    decrement = int(it.quantity or 0)
+                    new_qty = current_qty - decrement
+                    if new_qty < 0:
+                        new_qty = 0
+                    asset.quantity = new_qty
+                    asset.save()
+                except Exception:
+                    continue
+            ar.status = AssetRequest.APPROVED
+            ar.save()
+
+    return redirect('assets:request_list')
+
+
+@login_required
+def request_decline(request, request_id):
+    if request.method != 'POST':
+        return redirect('assets:request_list')
+    ar = get_object_or_404(AssetRequest, id=request_id)
+    ar.status = AssetRequest.DECLINED
+    ar.save()
+    return redirect('assets:request_list')
 
 
