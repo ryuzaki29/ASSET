@@ -1,22 +1,29 @@
 from django import forms
 from django.contrib.auth.models import User
+from assets.roles.models import Role
 
 
 class UserRegistrationForm(forms.ModelForm):
 
     password = forms.CharField(
-        widget=forms.PasswordInput,
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
         label="Password"
     )
 
     password2 = forms.CharField(
-        widget=forms.PasswordInput,
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
         label="Confirm Password"
     )
 
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
@@ -34,33 +41,31 @@ class UserRegistrationForm(forms.ModelForm):
 
         return cleaned_data
 
-
 class UserEditForm(forms.ModelForm):
-    """Form for editing user information"""
-    
-    contact_number = forms.CharField(
-        max_length=20,
-        required=False,
-        label="Phone Number"
-    )
-    
+
     designation = forms.ModelChoiceField(
-        queryset=None,
+        queryset=Role.objects.all(),
         required=False,
-        label="Role/Designation"
+        label="Role/Designation",
+        empty_label="— No Role —",
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'is_active']
+        fields = ['username', 'first_name', 'last_name', 'email']
         widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        from assets.roles.models import Role
-        self.fields['designation'].queryset = Role.objects.all()
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        qs = User.objects.filter(username=username)
+        if self.instance and self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError("That username is already taken. Please choose a different one.")
+        return username

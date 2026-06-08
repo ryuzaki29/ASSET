@@ -9,7 +9,8 @@ class Role(models.Model):
     )
 
     code = models.CharField(
-        max_length=50
+        max_length=50,
+        unique=True
     )
 
     description = models.CharField(
@@ -22,3 +23,7 @@ class Role(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        self.code = self.code.strip().upper()
+        super().save(*args, **kwargs)
