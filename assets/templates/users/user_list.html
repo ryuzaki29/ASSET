@@ -266,13 +266,17 @@
                 <td>{{ user.first_name }} {{ user.last_name }}</td>
                 <td>{{ user.email|default:"—" }}</td>
                 <td>
-                    <span class="role-badge">
-                        {% if user.profile.designation %}
-                            {{ user.profile.designation }}
-                        {% else %}
+                    {% if user.groups.count %}
+                        {% for group in user.groups.all %}
+                            <span class="role-badge">
+                                {{ group.name }}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="role-badge">
                             User
-                        {% endif %}
-                    </span>
+                        </span>
+                    {% endif %}
                 </td>
                 <td class="text-center">
                     <div class="action-buttons">

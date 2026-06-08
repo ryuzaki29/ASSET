@@ -11,7 +11,7 @@
 
     body {
         background: linear-gradient(to bottom right, #faf5f0, #f5ede4);
-        font-family: 'Segoe UI', sans-serif;
+        font-family: 'Montserrat', Arial, Helvetica, sans-serif;
     }
 
     main {
@@ -37,6 +37,35 @@
         transform: translateX(-4px);
     }
 
+    /* The Grid Container - Split evenly into 4 Columns */
+    .permissions-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); 
+        gap: 16px 32px;                        
+        width: 100%;
+    }
+
+    /* Individual Checkbox + Label Layout alignment */
+    .permission-item {
+        display: flex;
+        align-items: center;                   
+        gap: 10px;                             
+    }
+
+    .permission-item label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .permission-item input[type="checkbox"] {
+        cursor: pointer;
+        width: 16px;
+        height: 16px;
+        margin-top: 15px;
+    }
+
     /* FORM CONTAINER */
     .form-container {
         background: white;
@@ -59,6 +88,11 @@
         font-weight: 700;
         color: #6b0f28;
         margin: 0;
+    }
+    
+    .role-label {
+        font-weight: 700;
+        color: #6b0f28;
     }
 
     /* FORM GROUPS */
@@ -301,17 +335,19 @@
 
         <!-- Role/Designation (Only admin/superuser can change role) -->
         {% if is_admin_editing or request.user.is_superuser %}
-            <div class="form-group">
-                <label for="designation">Role / Designation</label>
-                <select id="designation" name="designation">
-                    <option value="">-- Select a Role --</option>
-                    {% for role in roles %}
-                        <option value="{{ role.id }}" 
-                                {% if form.initial.designation == role.id %}selected{% endif %}>
-                            {{ role.name }}
-                        </option>
+            <div class="permission-section">
+                <!-- Renders the heading once for the entire group -->
+                <label class="role-label">{{ section_name|default:"ROLES" }}</label>
+                
+                <div class="permissions-grid">
+                    <!-- Loop directly through the checkboxes inside form.groups -->
+                    {% for checkbox in form.groups %}
+                        <div class="permission-item">
+                            {{ checkbox.tag }}
+                            <label for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                        </div>
                     {% endfor %}
-                </select>
+                </div>
             </div>
         {% endif %}
 
