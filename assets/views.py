@@ -238,6 +238,7 @@ def asset_create(request):
             log_details=request.POST.get("log_details", "")
         )
         asset.save()
+        messages.success(request, "Asset created successfully.")
         return redirect("assets:asset_list")
     
     context = {
@@ -260,6 +261,7 @@ def asset_edit(request, asset_id):
         asset.status = request.POST.get("status")
         asset.log_details = request.POST.get("log_details", "")
         asset.save()
+        messages.success(request, "Asset updated successfully.")
         return redirect("assets:asset_detail", asset_id=asset.id)
     
     context = {
@@ -267,5 +269,121 @@ def asset_edit(request, asset_id):
         "type_choices": Asset.TYPE_CHOICES
     }
     return render(request, "assets/edit_asset.html", context)
+
+
+@login_required
+def request_list(request):
+    """List requests that are currently 'For Approval' and show all requests in history."""
+    pending = AssetRequest.objects.filter(status=AssetRequest.FOR_APPROVAL).prefetch_related('items__asset').order_by('-created_at')
+    history = AssetRequest.objects.prefetch_related('items__asset').order_by('-created_at')
+    context = {
+        'requests': pending,
+        'history': history
+    }
+    return render(request, 'assets/request_list.html', context)
+
+
+@login_required
+def request_create(request):
+    if request.method == "POST":
+        # Collect basic fields
+        requestor_name = request.POST.get('requestorName') or request.POST.get('requestor_name')
+        requestor_group = request.POST.get('requestorGroup') or request.POST.get('requestor_group')
+        reason = request.POST.get('requestReason') or request.POST.get('request_reason')
+
+        with transaction.atomic():
+            ar = AssetRequest.objects.create(
+                requestor_name=requestor_name or (request.user.get_full_name() or request.user.username),
+                requestor_group=requestor_group or "",
+                reason=reason or "",
+                status=AssetRequest.FOR_APPROVAL,
+                created_by=request.user
+            )
+
+            # asset_select[] and asset_qty[] come from the modal form; use getlist
+            asset_ids = request.POST.getlist('asset_select[]') or request.POST.getlist('asset_select')
+            qtys = request.POST.getlist('asset_qty[]') or request.POST.getlist('asset_qty')
+
+            # pair and create items
+            for i, a_id in enumerate(asset_ids):
+                try:
+                    asset = Asset.objects.get(id=int(a_id))
+                except Exception:
+                    continue
+                try:
+                    q = int(qtys[i]) if i < len(qtys) and qtys[i] else 1
+                except Exception:
+                    q = 1
+                if q <= 0:
+                    q = 1
+                AssetRequestItem.objects.create(request=ar, asset=asset, quantity=q)
+
+        messages.success(request, "Your request has been submitted successfully.")
+        return redirect('assets:asset_list')
+
+    return redirect('assets:asset_list')
+
+
+@login_required
+def request_approve(request, request_id):
+    if request.method != 'POST':
+        return redirect('assets:request_list')
+
+    ar = get_object_or_404(AssetRequest, id=request_id)
+
+    if ar.status != AssetRequest.FOR_APPROVAL:
+        return redirect('assets:request_list')
+
+    insufficient_items = []
+    for it in ar.items.select_related('asset'):
+        asset = it.asset
+        if asset.quantity < it.quantity:
+            insufficient_items.append(
+                f"{asset.name} (requested {it.quantity}, available {asset.quantity})"
+            )
+
+    if insufficient_items:
+        messages.error(
+            request,
+            "Cannot approve request because the following items do not have enough stock: "
+            + ", ".join(insufficient_items)
+        )
+        return redirect('assets:request_list')
+
+    with transaction.atomic():
+        for it in ar.items.select_related('asset'):
+            asset = it.asset
+            current_qty = int(asset.quantity or 0)
+            decrement = int(it.quantity or 0)
+            asset.quantity = max(current_qty - decrement, 0)
+            asset.save()
+
+            it.approved_quantity = decrement
+            it.save()
+
+        ar.status = AssetRequest.APPROVED
+        ar.save()
+
+    messages.success(request, "Request approved and inventory updated.")
+    return redirect('assets:request_list')
+
+
+@login_required
+def request_decline(request, request_id):
+    if request.method != 'POST':
+        return redirect('assets:request_list')
+
+    ar = get_object_or_404(AssetRequest, id=request_id)
+    decline_reason = request.POST.get('decline_reason', '').strip()
+
+    if ar.status == AssetRequest.FOR_APPROVAL:
+        ar.status = AssetRequest.DECLINED
+        ar.decline_reason = decline_reason
+        ar.save()
+        messages.success(request, "Request declined." + (" Reason saved." if decline_reason else ""))
+    else:
+        messages.error(request, "Only pending requests may be declined.")
+
+    return redirect('assets:request_list')
 
 
