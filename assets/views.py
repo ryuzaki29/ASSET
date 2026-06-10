@@ -248,6 +248,7 @@ def asset_create(request):
             log_details=request.POST.get("log_details", "")
         )
         asset.save()
+        messages.success(request, "Asset created successfully.")
         return redirect("assets:asset_list")
     
     context = {
@@ -268,6 +269,7 @@ def asset_edit(request, asset_id):
         asset.status = request.POST.get("status")
         asset.log_details = request.POST.get("log_details", "")
         asset.save()
+        messages.success(request, "Asset updated successfully.")
         return redirect("assets:asset_detail", asset_id=asset.id)
     
     context = {
@@ -324,6 +326,7 @@ def request_create(request):
                     q = 1
                 AssetRequestItem.objects.create(request=ar, asset=asset, quantity=q)
 
+        messages.success(request, "Your request has been submitted successfully.")
         return redirect('assets:asset_list')
 
     return redirect('assets:asset_list')
