@@ -264,6 +264,153 @@
         background: #fff1f4;
     }
 
+    .modal-content {
+        border-radius: 24px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16);
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #8a1538, #6d102c);
+        color: white;
+        border-bottom: none;
+        padding: 28px 32px;
+    }
+
+    .modal-title {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 800;
+    }
+
+    .modal-body {
+        padding: 32px;
+        background: #fff7f9;
+    }
+
+    .modal-body .form-label {
+        color: #5c1025;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .modal-body .form-control,
+    .modal-body .form-select {
+        border-radius: 16px;
+        border: 1px solid #e8b8c5;
+        background: white;
+        padding: 14px 16px;
+        min-height: 48px;
+        box-shadow: inset 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .asset-row {
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1d4dc;
+    }
+
+    .asset-row:last-child {
+        border-bottom: none;
+    }
+
+    .asset-row .asset-select {
+        flex: 2;
+    }
+
+    .asset-row .asset-qty {
+        width: 84px;
+    }
+
+    .asset-row .add-asset-btn,
+    .asset-row .remove-asset-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        border: none;
+        background: #8a1538;
+        color: white;
+        font-size: 20px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+
+    .asset-row .remove-asset-btn {
+        background: #f8d7da;
+        color: #8a1538;
+    }
+
+    .asset-row .add-asset-btn:hover,
+    .asset-row .remove-asset-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .selected-items-card {
+        margin-top: 16px;
+        border-radius: 20px;
+        border: 1px solid #e8b8c5;
+        background: white;
+        padding: 18px;
+        box-shadow: 0 8px 20px rgba(138, 21, 56, 0.08);
+    }
+
+    .selected-items-card .list-group-item {
+        background: transparent;
+        border: none;
+        padding-left: 0;
+        padding-right: 0;
+        color: #47212d;
+    }
+
+    .selected-items-card .list-group-item + .list-group-item {
+        border-top: 1px solid #f1d4dc;
+    }
+
+    .invalid-feedback {
+        display: block;
+        color: #991b1b;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+
+    .modal-footer {
+        padding: 24px 32px;
+        border-top: none;
+        background: #fff7f9;
+    }
+
+    .modal-footer button {
+        min-width: 140px;
+    }
+
+    .close-modal-btn {
+        background: #ffffff;
+        border: 1px solid #e8b8c5;
+        color: #8a1538;
+    }
+
+    .close-modal-btn:hover {
+        background: #fff1f4;
+    }
+
+    @media (max-width: 768px) {
+        .asset-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .asset-row .asset-qty,
+        .asset-row .add-asset-btn,
+        .asset-row .remove-asset-btn {
+            width: 100%;
+        }
+    }
+
     /* EMPTY STATE */
     .empty-state {
         text-align: center;
@@ -392,28 +539,29 @@
                         </div>
                         
                             <div class="mb-3">
-                                <label class="form-label">Assets</label>
-                                <div id="assetRows">
-                                    <div class="asset-row d-flex align-items-center mb-2">
-                                        <select class="form-select asset-select" name="asset_select[]">
-                                            <option value="" selected disabled>Select asset</option>
-                                            {% for asset in assets %}
-                                                <option value="{{ asset.id }}" data-name="{{ asset.name }}" data-available="{{ asset.quantity }}">{{ asset.name }} (Available: {{ asset.quantity }})</option>
-                                            {% endfor %}
-                                        </select>
+                            <label class="form-label">Assets</label>
+                            <div id="assetRows">
+                                <div class="asset-row d-flex align-items-center mb-2">
+                                    <select class="form-select asset-select" name="asset_select[]">
+                                        <option value="" selected disabled>Select asset</option>
+                                        {% for asset in assets %}
+                                            <option value="{{ asset.id }}" data-name="{{ asset.name }}" data-available="{{ asset.quantity }}">{{ asset.name }} (Available: {{ asset.quantity }})</option>
+                                        {% endfor %}
+                                    </select>
 
-                                        <input type="number" class="form-control form-control-sm asset-qty" name="asset_qty[]" min="1" value="1">
+                                    <input type="number" class="form-control form-control-sm asset-qty" name="asset_qty[]" min="1" value="1">
 
-                                        <button type="button" class="add-asset-btn">+</button>
-                                        <div class="invalid-feedback" style="display:none;"></div>
-                                    </div>
+                                    <button type="button" class="add-asset-btn">+</button>
+                                    <button type="button" class="remove-asset-btn">−</button>
+                                    <div class="invalid-feedback" style="display:none;"></div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Selected Items</label>
-                                <ul id="selectedList" class="list-group"></ul>
-                            </div>
+                        <div class="mb-3 selected-items-card">
+                            <label class="form-label mb-3">Selected Items</label>
+                            <ul id="selectedList" class="list-group"></ul>
+                        </div>
                         <div class="mb-3">
                             <label for="requestReason" class="form-label">Reason</label>
                             <textarea class="form-control" id="requestReason" name="requestReason" rows="3" placeholder="Describe why you need this asset"></textarea>
@@ -421,8 +569,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" data-bs-dismiss="modal">Close</button>
-                    <button id="submitRequestBtn" type="submit" form="requestForm" class="btn-primary">Send Request</button>
+                    <button type="button" class="btn close-modal-btn" data-bs-dismiss="modal">Close</button>
+                    <button id="submitRequestBtn" type="submit" form="requestForm" class="btn btn-primary">Send Request</button>
                 </div>
             </div>
         </div>
