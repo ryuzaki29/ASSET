@@ -52,6 +52,7 @@ class AssetRequest(models.Model):
     requestor_name = models.CharField(max_length=200)
     requestor_group = models.CharField(max_length=200, blank=True)
     reason = models.TextField(blank=True)
+    decline_reason = models.TextField(blank=True, default="")
     status = models.CharField(max_length=32, choices=STATUS_CHOICES, default=FOR_APPROVAL)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -64,6 +65,7 @@ class AssetRequestItem(models.Model):
     request = models.ForeignKey(AssetRequest, on_delete=models.CASCADE, related_name='items')
     asset = models.ForeignKey(Asset, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField(default=1)
+    approved_quantity = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"{self.asset.name} x{self.quantity} for Request #{self.request.id}"
