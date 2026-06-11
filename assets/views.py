@@ -36,6 +36,8 @@ def landing(request):
     return render(request, "assets/landing.html")
 
 # Added Registration Form
+from django.contrib.auth.models import User, Group
+
 def register_view(request):
     form = UserRegistrationForm(request.POST or None)
 
@@ -47,13 +49,19 @@ def register_view(request):
 
         Profile.objects.create(user=user)
 
+        # Automatically assign Staff role
+        staff_group, created = Group.objects.get_or_create(
+            name="Staff"
+        )
+        user.groups.add(staff_group)
+
         return redirect("assets:landing")
 
     return render(
-            request,
-            "users/register.html",
-            {"form": form}
-        )
+        request,
+        "users/register.html",
+        {"form": form}
+    )
 
 # User Profile 
 @login_required
@@ -150,6 +158,8 @@ def user_edit(request, user_id):
 
     can_manage_groups = can_change_users(request.user)
 
+    is_admin_editing = can_manage_groups or request.user.is_superuser
+
     if (
         not can_manage_groups and
         request.user.id != user_to_edit.id
@@ -179,6 +189,7 @@ def user_edit(request, user_id):
             "title": "Edit User",
             "user": user_to_edit,
             "can_manage_groups": can_manage_groups,
+            "is_admin_editing": is_admin_editing,   # ✅ ADD THIS
         }
     )
 
