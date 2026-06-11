@@ -10,8 +10,8 @@
     }
 
     body {
-        background: #e9eeee;
-        font-family: 'Montserrat', Arial, Helvetica, sans-serif!important;
+        background: linear-gradient(to bottom right, #faf5f0, #f5ede4);
+        font-family: 'Montserrat', Arial, Helvetica, sans-serif;
     }
 
     main {
@@ -73,11 +73,6 @@
         background: #8a1538;
     }
 
-    .asset-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 10px 25px rgba(224, 239, 243, 0.25);
-    }
-
     /* TITLE */
     .asset-title {
         margin: 0;
@@ -102,6 +97,21 @@
         border-radius: 999px;
         background: #ffedd5;
         color: #8a1538;
+    }
+
+        .role-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 16px;
+        background: #f5e5e0;
+        color: #8a1538;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     /* INFO */
@@ -303,15 +313,15 @@
 
 <div class="asset-card">
 
-    <div class="info-row">
-        <span class="label">Role Code</span>
-        <span class="value">{{ role.code }}</span>
-    </div>
+    <h4>Permissions</h4>
 
-    <div class="info-row">
-        <span class="label">Description</span>
-        <span class="value">{{ role.description|default:"No description provided." }}</span>
-    </div>
+    <ul>
+    {% for permission in role.permissions.all %}
+        <li>{{ permission.name }}</li>
+    {% empty %}
+        <li>No permissions assigned.</li>
+    {% endfor %}
+    </ul>
 
 </div>
 

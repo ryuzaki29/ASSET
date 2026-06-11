@@ -1,46 +1,60 @@
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
+from django.contrib.auth.models import Group, Permission
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseForbidden
 from django.urls import reverse_lazy
-from django import forms
-from .models import Role
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
+from assets.utils.permissions import is_admin_user
+from .forms import GroupForm
 
-class RoleForm(forms.ModelForm):
-    class Meta:
-        model = Role
-        fields = ['name', 'code', 'description']
+# ROLE LIST
+class RoleListView(LoginRequiredMixin, ListView):
+    model = Group
+    template_name = "roles/role_list.html"
+    context_object_name = "groups"
 
-class RoleListView(ListView):
-    model = Role
-    template_name = 'roles/role_list.html'
-    context_object_name = 'roles'
+# ROLE DETAIL
+class RoleDetailView(LoginRequiredMixin, DetailView):
+    model = Group
+    template_name = "roles/role_detail.html"
+    context_object_name = "role"
 
-    def get_queryset(self):
-        if not Role.objects.exists():
-            for code, name in Role.ROLE_CHOICES:
-                Role.objects.create(code=code, name=name)
-        return Role.objects.all()
+# ROLE CREATE
+class RoleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    permission_required = "auth.add_group" 
+    model = Group
+    form_class = GroupForm
+    template_name = "roles/role_form.html"
+    success_url = reverse_lazy("roles:role_list")
 
-class RoleCreateView(CreateView):
-    model = Role
-    form_class = RoleForm
-    template_name = 'roles/role_form.html'
-    success_url = reverse_lazy('roles:role_list')
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.object.permissions.set(form.cleaned_data.get("permissions", []))
+        return response
 
+# ROLE UPDATE
+class RoleUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    permission_required = "auth.change_group"
+    model = Group
+    form_class = GroupForm
+    template_name = "roles/role_form.html"
+    success_url = reverse_lazy("roles:role_list")
 
-class RoleUpdateView(UpdateView):
-    model = Role
-    form_class = RoleForm
-    template_name = 'roles/role_form.html'
-    success_url = reverse_lazy('roles:role_list')
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = self.object
+        return kwargs
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.object.permissions.set(form.cleaned_data.get("permissions", []))
+        return response
 
-class RoleDeleteView(DeleteView):
-    model = Role
-    template_name = 'roles/role_delete.html'
-    success_url = reverse_lazy('roles:role_list')
-
-
-class RoleDetailView(DetailView):
-    model = Role
-    template_name = 'roles/role_detail.html'
-    context_object_name = 'role'
+# ROLE DELETE
+class RoleDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+    permission_required = "auth.delete_group"
+    model = Group
+    template_name = "roles/role_delete.html"
+    success_url = reverse_lazy("roles:role_list")

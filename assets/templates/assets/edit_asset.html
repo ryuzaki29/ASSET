@@ -173,10 +173,39 @@
         background: white;
         border: 1px solid #d9a5b5;
         color: #8a1538;
+        box-shadow: 0 6px 18px rgba(138, 21, 56, 0.18);
+        width: 100%;
     }
 
     .btn-secondary:hover {
         background: #fff1f4;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-approved {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-declined {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
     }
 
     /* MOBILE */
@@ -213,6 +242,16 @@
 {% block content %}
 
 <div class="form-container">
+
+    {% if messages %}
+        <div class="table-section" style="margin-top: 10px;">
+            {% for message in messages %}
+                <div class="status-badge {% if message.tags == 'success' %}status-approved{% elif message.tags == 'error' %}status-declined{% else %}status-pending{% endif %}" style="display: inline-block; margin-bottom: 10px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <!-- HEADER -->
     <div class="form-header">

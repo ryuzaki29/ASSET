@@ -11,7 +11,7 @@
 
     body {
         background: linear-gradient(to bottom right, #faf5f0, #f5ede4);
-        font-family: 'Segoe UI', sans-serif;
+        font-family: 'Montserrat', Arial, Helvetica, sans-serif;
     }
 
     main {
@@ -37,6 +37,35 @@
         transform: translateX(-4px);
     }
 
+    /* The Grid Container - Split evenly into 4 Columns */
+    .permissions-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); 
+        gap: 16px 32px;                        
+        width: 100%;
+    }
+
+    /* Individual Checkbox + Label Layout alignment */
+    .permission-item {
+        display: flex;
+        align-items: center;                   
+        gap: 10px;                             
+    }
+
+    .permission-item label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .permission-item input[type="checkbox"] {
+        cursor: pointer;
+        width: 16px;
+        height: 16px;
+        margin-top: 15px;
+    }
+
     /* FORM CONTAINER */
     .form-container {
         background: white;
@@ -59,6 +88,11 @@
         font-weight: 700;
         color: #6b0f28;
         margin: 0;
+    }
+    
+    .role-label {
+        font-weight: 700;
+        color: #6b0f28;
     }
 
     /* FORM GROUPS */
@@ -207,22 +241,20 @@
     <form method="post" novalidate>
         {% csrf_token %}
 
-        <!-- Username (create only) -->
-        {% if not user %}
-            <div class="form-group {% if form.username.errors %}has-error{% endif %}">
-                <label for="{{ form.username.id_for_label }}">
-                    Username <span class="required">*</span>
-                </label>
-                {{ form.username }}
-                {% if form.username.errors %}
-                    <ul class="errorlist">
-                        {% for error in form.username.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
-        {% endif %}
+        <!-- Username -->
+        <div class="form-group {% if form.username.errors %}has-error{% endif %}">
+            <label for="{{ form.username.id_for_label }}">
+                Username <span class="required">*</span>
+            </label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <ul class="errorlist">
+                    {% for error in form.username.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
 
         <!-- First Name -->
         <div class="form-group {% if form.first_name.errors %}has-error{% endif %}">
@@ -270,7 +302,7 @@
         </div>
 
         <!-- Password (create only) -->
-        {% if not user %}
+        {% if "Create" in title %}
             <div class="form-group {% if form.password.errors %}has-error{% endif %}">
                 <label for="{{ form.password.id_for_label }}">
                     Password <span class="required">*</span>
@@ -301,36 +333,20 @@
             </div>
         {% endif %}
 
-        <!-- Phone Number -->
-        <div class="form-group">
-            <label for="contact_number">Phone Number</label>
-            <input type="text" id="contact_number" name="contact_number" 
-                   value="{% if form.initial.contact_number %}{{ form.initial.contact_number }}{% endif %}">
-        </div>
-
-        <!-- Role/Designation -->
-        <div class="form-group">
-            <label for="designation">Role / Designation</label>
-            <select id="designation" name="designation">
-                <option value="">-- Select a Role --</option>
-                {% for role in roles %}
-                    <option value="{{ role.id }}" 
-                            {% if form.initial.designation == role.id %}selected{% endif %}>
-                        {{ role.name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Status (edit only) -->
-        {% if user %}
-            <div class="form-group">
-                <div class="checkbox-group">
-                    <input type="checkbox" id="is_active" name="is_active" 
-                           {% if form.instance.is_active %}checked{% endif %}>
-                    <label for="is_active" style="margin: 0; text-transform: capitalize;">
-                        Account is Active
-                    </label>
+        <!-- Role/Designation (Only admin/superuser can change role) -->
+        {% if is_admin_editing or request.user.is_superuser %}
+            <div class="permission-section">
+                <!-- Renders the heading once for the entire group -->
+                <label class="role-label">{{ section_name|default:"ROLES" }}</label>
+                
+                <div class="permissions-grid">
+                    <!-- Loop directly through the checkboxes inside form.groups -->
+                    {% for checkbox in form.groups %}
+                        <div class="permission-item">
+                            {{ checkbox.tag }}
+                            <label for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         {% endif %}
@@ -349,10 +365,10 @@
         <!-- Buttons -->
         <div class="form-actions">
             <button type="submit" class="btn-submit">
-                <i class="bi bi-check-circle"></i> {% if user %}Update User{% else %}Create User{% endif %}
+                <i class="bi bi-check-circle"></i> {% if form.instance.pk %}Update User Entry{% else %}Add User{% endif %}
             </button>
             <a href="{% url 'assets:user_list' %}" class="btn-cancel">
-                <i class="bi bi-x-circle"></i> Cancel
+                <i class="bi bi-x-circle"></i> Cancel                                                       
             </a>
         </div>
     </form>
