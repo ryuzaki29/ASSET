@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
 
 # Import Asset Model for Permission Filtering
-from assets.models import Asset 
+from assets.models import Asset, AssetRequest,  AssetRequestItem 
 
 User = get_user_model()
 
@@ -34,10 +34,12 @@ class GroupForm(forms.ModelForm):
         # Automatically fetch the correct content types
         user_ct = ContentType.objects.get_for_model(User)
         asset_ct = ContentType.objects.get_for_model(Asset)
+        asset_request_ct = ContentType.objects.get_for_model(AssetRequest)
+        asset_request_item_ct = ContentType.objects.get_for_model(AssetRequestItem)
         
         # Filter using the verified content types
         self.fields["permissions"].queryset = Permission.objects.filter(
-            content_type__in=[user_ct, asset_ct]
+            content_type__in=[user_ct, asset_ct, asset_request_ct, asset_request_item_ct]
         ).order_by("content_type__model", "codename")
 
     def get_grouped_permissions(self):
@@ -47,13 +49,19 @@ class GroupForm(forms.ModelForm):
         """
         user_ct = ContentType.objects.get_for_model(User)
         asset_ct = ContentType.objects.get_for_model(Asset)
+        asset_request_ct = ContentType.objects.get_for_model(AssetRequest)
+        asset_request_item_ct = ContentType.objects.get_for_model(AssetRequestItem)
         
         # Pull sets of IDs belonging to each content type to cross-reference
         user_ids = set(Permission.objects.filter(content_type=user_ct).values_list('id', flat=True))
         asset_ids = set(Permission.objects.filter(content_type=asset_ct).values_list('id', flat=True))
+        asset_request_ids = set(Permission.objects.filter(content_type=asset_request_ct).values_list('id', flat=True))
+        asset_request_item_ids = set(Permission.objects.filter(content_type=asset_request_item_ct).values_list('id', flat=True))
         
         user_widgets = []
         asset_widgets = []
+        asset_request_widgets = []
+        asset_request_item_widgets = []
         
         # Cycle through checkboxes, matching permission IDs to their respective category
         for widget in self['permissions']:
@@ -66,8 +74,15 @@ class GroupForm(forms.ModelForm):
                 user_widgets.append(widget)
             elif val_id in asset_ids:
                 asset_widgets.append(widget)
+            elif val_id in asset_request_ids:
+                asset_request_widgets.append(widget)
+            elif val_id in asset_request_item_ids:
+                asset_request_item_widgets.append(widget)
+
                 
         return {
             'User Management': user_widgets,
             'Asset Management': asset_widgets,
+            'Asset Request Management': asset_request_widgets,
+            'Asset Request Item Management': asset_request_item_widgets,
         }
