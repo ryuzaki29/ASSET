@@ -3,6 +3,7 @@
 {% block title %}Assets{% endblock %}
 
 {% block extra_style %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
 <style>
     * {
         box-sizing: border-box;
@@ -457,6 +458,62 @@
         box-shadow: 0 10px 28px rgba(0,0,0,0.05);
     }
 
+    .view-toggle {
+        display: flex;
+        background: rgba(255,255,255,0.15);
+        border-radius: 12px;
+        padding: 4px;
+        gap: 4px;
+    }
+
+    .view-toggle-btn {
+        padding: 8px 18px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: white;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .view-toggle-btn.active {
+        background: white;
+        color: #8a1538;
+    }
+
+    .view-toggle-btn:hover:not(.active) {
+        background: rgba(255,255,255,0.2);
+    }
+
+    #assetsTable thead {
+        background: #8a1538;
+        color: white;
+    }
+
+    #assetsTable thead th {
+        border-color: #6d102c !important;
+    }
+
+    .tbl-action {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: opacity 0.2s;
+    }
+
+    .tbl-action:hover { opacity: 0.85; }
+
+    .tbl-view { background: #8a1538; color: white; }
+    .tbl-edit { border: 1px solid #8a1538; color: #8a1538; background: white; }
+
     .empty-state h2 {
         color: #8a1538;
         margin-bottom: 12px;
@@ -547,6 +604,15 @@
         </div>
 
         <div class="header-actions">
+            <div class="view-toggle">
+                <button id="cardViewBtn" class="view-toggle-btn">
+                    <i class="bi bi-grid-3x3-gap"></i> Cards
+                </button>
+                <button id="tableViewBtn" class="view-toggle-btn active">
+                    <i class="bi bi-table"></i> Table
+                </button>
+            </div>
+
             <a href="{% url 'assets:asset_create' %}" class="create-btn">
                 + Add Asset
             </a>
@@ -628,7 +694,8 @@
 
     {% if assets %}
 
-    <!-- GRID -->
+    <!-- CARD VIEW -->
+    <div id="cardView" style="display:none;">
     <div class="asset-grid">
 
         {% for asset in assets %}
@@ -700,6 +767,47 @@
         </div>
         {% endfor %}
 
+    </div><!-- /asset-grid -->
+    </div><!-- /cardView -->
+
+    <!-- TABLE VIEW -->
+    <div id="tableView" class="table-section">
+        <table id="assetsTable" class="table table-hover table-bordered align-middle w-100">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in assets %}
+                <tr>
+                    <td>{{ asset.id }}</td>
+                    <td>{{ asset.name }}</td>
+                    <td>{{ asset.get_asset_type_display }}</td>
+                    <td>{{ asset.category }}</td>
+                    <td>{{ asset.quantity }}</td>
+                    <td>
+                        <span class="status
+                            {% if asset.status == 'Active' %}status-active
+                            {% elif asset.status == 'Inactive' %}status-inactive
+                            {% else %}status-maintenance{% endif %}">
+                            {{ asset.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'assets:asset_detail' asset.id %}" class="tbl-action tbl-view">View</a>
+                        <a href="{% url 'assets:asset_edit' asset.id %}" class="tbl-action tbl-edit">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
     {% else %}
@@ -981,6 +1089,45 @@ document.addEventListener('DOMContentLoaded', function(){
             var n = document.getElementById('requestorName'); if(n) n.value = '';
             var g = document.getElementById('requestorGroup'); if(g) g.value = '';
             var re = document.getElementById('requestReason'); if(re) re.value = '';
+        });
+    }
+});
+</script>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var table = document.getElementById('assetsTable');
+    var dt;
+    if (table) {
+        dt = new DataTable('#assetsTable', {
+            pageLength: 10,
+            order: [[0, 'asc']],
+            columnDefs: [{ orderable: false, targets: -1 }]
+        });
+    }
+
+    var cardViewBtn  = document.getElementById('cardViewBtn');
+    var tableViewBtn = document.getElementById('tableViewBtn');
+    var cardView     = document.getElementById('cardView');
+    var tableView    = document.getElementById('tableView');
+
+    if (cardViewBtn && tableViewBtn && cardView && tableView) {
+        cardViewBtn.addEventListener('click', function () {
+            cardView.style.display  = '';
+            tableView.style.display = 'none';
+            cardViewBtn.classList.add('active');
+            tableViewBtn.classList.remove('active');
+        });
+
+        tableViewBtn.addEventListener('click', function () {
+            cardView.style.display  = 'none';
+            tableView.style.display = '';
+            tableViewBtn.classList.add('active');
+            cardViewBtn.classList.remove('active');
+            if (dt) dt.columns.adjust();
         });
     }
 });
