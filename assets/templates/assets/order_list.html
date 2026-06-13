@@ -647,7 +647,7 @@
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="requestorName" class="form-label">Requestor Name</label>
-                            <input type="text" class="form-control" id="requestorName" name="requestorName" placeholder="Enter requestor name">
+                            <input type="text" class="form-control" id="requestorName" name="requestorName" value="{{ user.get_full_name|default:user.username }}" readonly style="background:#f8f0f3; cursor:not-allowed;">
                         </div>
                         <div class="mb-3">
                             <label for="requestorGroup" class="form-label">Requestor Group</label>
@@ -1086,7 +1086,7 @@ document.addEventListener('DOMContentLoaded', function(){
             var r = makeRow();
             container.appendChild(r);
             updateSummary();
-            var n = document.getElementById('requestorName'); if(n) n.value = '';
+            var n = document.getElementById('requestorName'); if(n) n.value = '{{ user.get_full_name|default:user.username }}';
             var g = document.getElementById('requestorGroup'); if(g) g.value = '';
             var re = document.getElementById('requestReason'); if(re) re.value = '';
         });
