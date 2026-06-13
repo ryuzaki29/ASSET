@@ -941,7 +941,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     </h5>
                     <div style="font-size:13px; opacity:0.85; margin-top:4px;">All asset transactions — created, edited, stock added</div>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="d-flex align-items-center gap-3 ms-auto">
+                    <button type="button" id="auditExportBtn" style="background:none; border:1px solid rgba(255,255,255,0.6); color:#fff; border-radius:6px; padding:4px 12px; font-size:13px; cursor:pointer;">
+                        <i class="bi bi-download me-1"></i> Export CSV
+                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
             </div>
             <div class="modal-body">
                 <!-- Filter Bar -->
@@ -1009,7 +1014,76 @@ document.addEventListener('DOMContentLoaded', function () {
                 </table>
             </div>
             <div class="modal-footer">
+                <button type="button" id="auditReportBtn" class="btn" style="background:#8a1538; color:#fff; font-weight:600;">
+                    <i class="bi bi-file-earmark-text me-1"></i> Generate Report
+                </button>
                 <button type="button" class="btn close-modal-btn" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Audit Report Modal -->
+<div class="modal fade" id="auditReportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius:12px; overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#8a1538,#6d102c); color:#fff; padding:18px 24px;">
+                <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Asset Transaction Report</h5>
+                <div class="d-flex align-items-center gap-2 ms-auto">
+                    <button type="button" id="auditReportPrintBtn" style="background:none; border:1px solid rgba(255,255,255,0.6); color:#fff; border-radius:6px; padding:4px 12px; font-size:13px; cursor:pointer;">
+                        <i class="bi bi-printer me-1"></i> Print
+                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="modal-body p-4" id="auditReportBody" style="background:#fff;">
+                <!-- Header -->
+                <div class="text-center mb-3">
+                    <div style="font-size:22px; font-weight:800; letter-spacing:1px;">ASSET MANAGEMENT SYSTEM</div>
+                    <div style="font-size:13px; color:#555;">Asset Transactions — Created, Edited, Stock Added</div>
+                    <div style="border-top:3px solid #8a1538; border-bottom:1px solid #8a1538; margin:8px 0; padding:4px 0; font-size:15px; font-weight:700; letter-spacing:1px;">
+                        ASSET TRANSACTION REPORT
+                    </div>
+                </div>
+                <!-- Meta info -->
+                <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:12px;">
+                    <div>
+                        <strong>Date Generated:</strong> <span id="reportDate"></span>
+                    </div>
+                    <div>
+                        <strong>Total Entries:</strong> <span id="reportCount"></span>
+                    </div>
+                </div>
+                <!-- Table -->
+                <table id="auditReportTable" style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr style="background:#8a1538; color:#fff;">
+                            <th style="border:1px solid #999; padding:7px 10px; text-align:center;">NO</th>
+                            <th style="border:1px solid #999; padding:7px 10px;">ASSET</th>
+                            <th style="border:1px solid #999; padding:7px 10px; text-align:center;">ACTION</th>
+                            <th style="border:1px solid #999; padding:7px 10px;">PERFORMED BY</th>
+                            <th style="border:1px solid #999; padding:7px 10px; text-align:right;">COST / UNIT</th>
+                            <th style="border:1px solid #999; padding:7px 10px;">NOTES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditReportTbody">
+                    </tbody>
+                </table>
+                <!-- Signatures -->
+                <div style="display:flex; justify-content:space-between; margin-top:48px; font-size:13px;">
+                    <div style="text-align:center; width:30%;">
+                        <div style="border-top:1px solid #333; padding-top:6px; font-weight:700;">Prepared By</div>
+                        <div style="color:#555; font-size:12px;">Signature over Printed Name</div>
+                    </div>
+                    <div style="text-align:center; width:30%;">
+                        <div style="border-top:1px solid #333; padding-top:6px; font-weight:700;">Verified By</div>
+                        <div style="color:#555; font-size:12px;">Signature over Printed Name</div>
+                    </div>
+                    <div style="text-align:center; width:30%;">
+                        <div style="border-top:1px solid #333; padding-top:6px; font-weight:700;">Received By</div>
+                        <div style="color:#555; font-size:12px;">Date / Time: ___________</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1131,6 +1205,67 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('auditFilterAction').value = '';
                 auditModalDT.column(2).search('');
                 auditModalDT.draw();
+            });
+
+            // Generate Report
+            document.getElementById('auditReportBtn').addEventListener('click', function () {
+                var rows = [];
+                auditModalDT.rows({ search: 'applied' }).data().each(function (row) {
+                    rows.push(row);
+                });
+
+                document.getElementById('reportDate').textContent = new Date().toLocaleDateString('en-PH', { year:'numeric', month:'long', day:'numeric' });
+                document.getElementById('reportCount').textContent = rows.length;
+
+                var tbody = document.getElementById('auditReportTbody');
+                tbody.innerHTML = '';
+                rows.forEach(function (row, i) {
+                    var action = String(row[2]).replace(/<[^>]*>/g, '').trim();
+                    var tr = document.createElement('tr');
+                    tr.style.background = i % 2 === 0 ? '#fff' : '#fdf4f6';
+                    tr.innerHTML = [
+                        '<td style="border:1px solid #ccc; padding:6px 10px; text-align:center;">' + (i + 1) + '</td>',
+                        '<td style="border:1px solid #ccc; padding:6px 10px; font-weight:600;">' + String(row[1]).replace(/<[^>]*>/g,'').trim() + '</td>',
+                        '<td style="border:1px solid #ccc; padding:6px 10px; text-align:center;">' + action + '</td>',
+                        '<td style="border:1px solid #ccc; padding:6px 10px;">' + String(row[3]).replace(/<[^>]*>/g,'').trim() + '</td>',
+                        '<td style="border:1px solid #ccc; padding:6px 10px; text-align:right;">' + String(row[4]).replace(/<[^>]*>/g,'').trim() + '</td>',
+                        '<td style="border:1px solid #ccc; padding:6px 10px;">' + String(row[5]).replace(/<[^>]*>/g,'').trim() + '</td>',
+                    ].join('');
+                    tbody.appendChild(tr);
+                });
+
+                var reportModal = new bootstrap.Modal(document.getElementById('auditReportModal'));
+                reportModal.show();
+            });
+
+            // Print report
+            document.getElementById('auditReportPrintBtn').addEventListener('click', function () {
+                var content = document.getElementById('auditReportBody').innerHTML;
+                var win = window.open('', '_blank');
+                win.document.write('<html><head><title>Asset Transaction Report</title><style>body{font-family:Arial,sans-serif;margin:32px;} table{width:100%;border-collapse:collapse;font-size:13px;} th,td{border:1px solid #999;padding:7px 10px;} thead tr{background:#8a1538;color:#fff;}</style></head><body>' + content + '</body></html>');
+                win.document.close();
+                win.focus();
+                win.print();
+            });
+
+            // Export visible rows as CSV
+            document.getElementById('auditExportBtn').addEventListener('click', function () {
+                var headers = ['Timestamp', 'Asset', 'Action', 'Performed By', 'Cost / Unit', 'Notes'];
+                var rows = [headers];
+                auditModalDT.rows({ search: 'applied' }).data().each(function (row) {
+                    rows.push(row.map(function (cell) {
+                        var text = String(cell).replace(/<[^>]*>/g, '').trim();
+                        return '"' + text.replace(/"/g, '""') + '"';
+                    }));
+                });
+                var csv = rows.map(function (r) { return r.join(','); }).join('\r\n');
+                var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'audit_log.csv';
+                a.click();
+                URL.revokeObjectURL(url);
             });
         } else {
             auditModalDT.columns.adjust();
