@@ -41,6 +41,7 @@ def landing(request):
 from django.contrib.auth.models import User, Group
 
 def register_view(request):
+    from django.contrib.auth import login as auth_login
     form = UserRegistrationForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -51,13 +52,9 @@ def register_view(request):
 
         Profile.objects.create(user=user)
 
-        # Automatically assign Staff role
-        staff_group, created = Group.objects.get_or_create(
-            name="Staff"
-        )
-        user.groups.add(staff_group)
-
-        return redirect("assets:landing")
+        auth_login(request, user)
+        messages.success(request, f"Account created successfully! Welcome, {user.first_name or user.username}.")
+        return redirect("home")
 
     return render(
         request,
@@ -104,13 +101,16 @@ def user_list(request):
             "You do not have permission to view users."
         )
 
-    users = User.objects.all()
+    assigned_users = User.objects.filter(groups__isnull=False).distinct()
+    new_users = User.objects.filter(groups__isnull=True)
 
     return render(
         request,
         "users/user_list.html",
         {
-            "users": users,
+            "assigned_users": assigned_users,
+            "new_users": new_users,
+            "total_users": assigned_users.count() + new_users.count(),
             "can_manage_all": True
         }
     )
@@ -139,6 +139,7 @@ def user_create(request):
         if selected_groups:
             user.groups.set(selected_groups)
 
+        messages.success(request, f"User '{user.username}' was created successfully.")
         return redirect("assets:user_list")
 
     return render(
@@ -181,6 +182,7 @@ def user_edit(request, user_id):
             edited_user.save()
             if can_manage_groups:
                 form.save_m2m()
+            messages.success(request, f"User '{edited_user.username}' was updated successfully.")
             return redirect("assets:user_list")
 
     else:
@@ -210,7 +212,9 @@ def user_delete(request, user_id):
     user = get_object_or_404(User, id=user_id)
 
     if request.method == "POST":
+        username = user.username
         user.delete()
+        messages.success(request, f"User '{username}' was deleted successfully.")
         return redirect("assets:user_list")
 
     return render(

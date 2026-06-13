@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib import messages
 
 from assets.utils.permissions import is_admin_user
 from .forms import GroupForm
@@ -25,7 +26,7 @@ class RoleDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
 
 # ROLE CREATE
 class RoleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
-    permission_required = "auth.add_group" 
+    permission_required = "auth.add_group"
     model = Group
     form_class = GroupForm
     template_name = "roles/role_form.html"
@@ -34,6 +35,7 @@ class RoleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         self.object.permissions.set(form.cleaned_data.get("permissions", []))
+        messages.success(self.request, f"Role '{self.object.name}' was created successfully.")
         return response
 
 # ROLE UPDATE
@@ -52,6 +54,7 @@ class RoleUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         self.object.permissions.set(form.cleaned_data.get("permissions", []))
+        messages.success(self.request, f"Role '{self.object.name}' was updated successfully.")
         return response
 
 # ROLE DELETE
@@ -60,3 +63,9 @@ class RoleDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Group
     template_name = "roles/role_delete.html"
     success_url = reverse_lazy("roles:role_list")
+
+    def form_valid(self, form):
+        name = self.object.name
+        response = super().form_valid(form)
+        messages.success(self.request, f"Role '{name}' was deleted successfully.")
+        return response
