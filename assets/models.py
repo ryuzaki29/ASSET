@@ -60,8 +60,45 @@ class AssetRequest(models.Model):
     created_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
     decline_reason = models.TextField(blank=True, default="")
 
+    def has_sufficient_stock(self):
+        return all(it.asset.quantity >= it.quantity for it in self.items.all())
+
+    def has_earlier_pending_conflicts(self):
+        my_asset_ids = set(self.items.values_list('asset_id', flat=True))
+        if not my_asset_ids:
+            return False
+        return (
+            AssetRequest.objects
+            .filter(
+                status=AssetRequest.FOR_APPROVAL,
+                created_at__lt=self.created_at,
+                items__asset_id__in=my_asset_ids
+            )
+            .exclude(id=self.id)
+            .exists()
+        )
+
     def __str__(self):
         return f"Request #{self.id} by {self.requestor_name}"
+
+
+class AssetLog(models.Model):
+    ACTION_CREATED = "Created"
+    ACTION_EDITED  = "Edited"
+    ACTION_STOCK   = "Stock Added"
+
+    asset         = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='logs')
+    action        = models.CharField(max_length=50)
+    performed_by  = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    cost_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    notes         = models.TextField(blank=True)
+    timestamp     = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.action} — {self.asset.name}"
 
 
 class AssetRequestItem(models.Model):

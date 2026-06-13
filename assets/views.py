@@ -1,12 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.contrib import messages
 from django.db import transaction
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.generic import TemplateView
 from .forms import UserRegistrationForm, UserEditForm 
-from .models import Asset, AssetRequest, AssetRequestItem, Profile
+from .models import Asset, AssetRequest, AssetRequestItem, AssetLog, Profile
 from django.contrib.auth.mixins import PermissionRequiredMixin
 
 
@@ -224,8 +224,9 @@ class IndexView(TemplateView):
 @login_required
 @permission_required("assets.view_asset", raise_exception=True)
 def asset_list(request):
-    assets = Asset.objects.all()
-    context = {"assets": assets}
+    assets   = Asset.objects.all()
+    all_logs = AssetLog.objects.select_related('asset', 'performed_by').order_by('-timestamp')
+    context  = {"assets": assets, "all_logs": all_logs}
     return render(request, "assets/order_list.html", context)
 
 # Asset Detail
@@ -233,7 +234,8 @@ def asset_list(request):
 @permission_required("assets.view_asset", raise_exception=True)
 def asset_detail(request, asset_id):
     asset = get_object_or_404(Asset, id=asset_id)
-    context = {"asset": asset}
+    logs  = asset.logs.select_related('performed_by').order_by('-timestamp')
+    context = {"asset": asset, "logs": logs}
     return render(request, "assets/order_detail.html", context)
 
 # Asset Create
@@ -251,6 +253,13 @@ def asset_create(request):
             log_details=request.POST.get("log_details", "")
         )
         asset.save()
+        AssetLog.objects.create(
+            asset=asset,
+            action=AssetLog.ACTION_CREATED,
+            performed_by=request.user,
+            cost_per_unit=asset.cost,
+            notes=f"Asset created with quantity {asset.quantity} at ₱{asset.cost} per unit."
+        )
         messages.success(request, "Asset created successfully.")
         return redirect("assets:asset_list")
     
@@ -259,6 +268,61 @@ def asset_create(request):
     }
     return render(request, "assets/create_asset.html", context)
 
+# Asset Logs JSON
+@login_required
+@permission_required("assets.view_asset", raise_exception=True)
+def asset_logs_json(request, asset_id):
+    asset = get_object_or_404(Asset, id=asset_id)
+    logs  = asset.logs.select_related('performed_by').order_by('-timestamp')
+    data  = []
+    for log in logs:
+        if log.performed_by:
+            performer = log.performed_by.get_full_name() or log.performed_by.username
+        else:
+            performer = '—'
+        data.append({
+            'timestamp':    log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'action':       log.action,
+            'performed_by': performer,
+            'cost_per_unit': str(log.cost_per_unit) if log.cost_per_unit else None,
+            'notes':        log.notes or '—',
+        })
+    return JsonResponse({'asset_name': asset.name, 'logs': data})
+
+# Asset Add Stock
+@login_required
+@permission_required("assets.change_asset", raise_exception=True)
+def asset_add_stock(request, asset_id):
+    asset = get_object_or_404(Asset, id=asset_id)
+    if request.method == "POST":
+        try:
+            amount = int(request.POST.get("amount", 0))
+        except ValueError:
+            amount = 0
+        if amount > 0:
+            from decimal import Decimal, InvalidOperation
+            cost_str = request.POST.get("cost", "").strip()
+            try:
+                cost_per_unit = Decimal(cost_str) if cost_str else None
+            except InvalidOperation:
+                cost_per_unit = None
+
+            asset.quantity += amount
+            asset.save()
+
+            cost_note = f" at ₱{cost_per_unit} each" if cost_per_unit else ""
+            AssetLog.objects.create(
+                asset=asset,
+                action=AssetLog.ACTION_STOCK,
+                performed_by=request.user,
+                cost_per_unit=cost_per_unit,
+                notes=f"Added {amount} unit(s){cost_note}. New stock: {asset.quantity}."
+            )
+            messages.success(request, f"Added {amount} unit(s) to {asset.name}. New stock: {asset.quantity}.")
+        else:
+            messages.error(request, "Please enter a valid amount greater than 0.")
+    return redirect("assets:asset_list")
+
 # Asset Edit
 @login_required
 @permission_required("assets.change_asset", raise_exception=True)
@@ -266,14 +330,34 @@ def asset_edit(request, asset_id):
     asset = get_object_or_404(Asset, id=asset_id)
     
     if request.method == "POST":
-        asset.name = request.POST.get("name")
-        asset.asset_type = request.POST.get("asset_type")
-        asset.category = request.POST.get("category")
-        asset.cost = request.POST.get("cost")
-        asset.quantity = request.POST.get("quantity")
-        asset.status = request.POST.get("status")
+        old = {
+            "name": asset.name, "category": asset.category,
+            "cost": str(asset.cost), "quantity": asset.quantity,
+            "status": asset.status, "asset_type": asset.asset_type,
+        }
+        asset.name        = request.POST.get("name")
+        asset.asset_type  = request.POST.get("asset_type")
+        asset.category    = request.POST.get("category")
+        asset.cost        = request.POST.get("cost")
+        asset.quantity    = request.POST.get("quantity")
+        asset.status      = request.POST.get("status")
         asset.log_details = request.POST.get("log_details", "")
         asset.save()
+
+        changes = []
+        if old["name"]      != asset.name:             changes.append(f"Name: '{old['name']}' → '{asset.name}'")
+        if old["category"]  != asset.category:         changes.append(f"Category: '{old['category']}' → '{asset.category}'")
+        if old["cost"]      != str(asset.cost):        changes.append(f"Cost: {old['cost']} → {asset.cost}")
+        if str(old["quantity"]) != str(asset.quantity):changes.append(f"Quantity: {old['quantity']} → {asset.quantity}")
+        if old["status"]    != asset.status:           changes.append(f"Status: '{old['status']}' → '{asset.status}'")
+        if old["asset_type"]!= asset.asset_type:       changes.append(f"Type: '{old['asset_type']}' → '{asset.asset_type}'")
+
+        AssetLog.objects.create(
+            asset=asset,
+            action=AssetLog.ACTION_EDITED,
+            performed_by=request.user,
+            notes="; ".join(changes) if changes else "No fields changed."
+        )
         messages.success(request, "Asset updated successfully.")
         return redirect("assets:asset_detail", asset_id=asset.id)
     
