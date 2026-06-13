@@ -208,7 +208,9 @@
     <div>
         <h1>Roles List</h1>
     </div>
-    <a href="{% url 'roles:role_create' %}" class="create-btn">+ Add Role</a>
+    {% if perms.auth.add_group %}
+        <a href="{% url 'roles:role_create' %}" class="create-btn">+ Add Role</a>
+    {% endif %}
 </div>
 
 {% if groups %}
@@ -242,12 +244,21 @@
 
                 <td class="text-center">
                     <div class="d-flex action-buttons justify-content-center gap-2">
+                        {% if perms.auth.view_group %}
+                        <a href="{% url 'roles:role_detail' group.id %}" class="btn btn-sm btn-view" title="View">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        {% endif %}
+                        {% if perms.auth.change_group %}
                         <a href="{% url 'roles:role_update' group.id %}" class="btn btn-sm btn-edit" title="Edit">
                             <i class="bi bi-pencil"></i>
                         </a>
+                        {% endif %}
+                        {% if perms.auth.delete_group %}
                         <a href="{% url 'roles:role_delete' group.id %}" class="btn btn-sm btn-delete" title="Delete">
                             <i class="bi bi-trash"></i>
                         </a>
+                        {% endif %}
                     </div>
                 </td>
             </tr>

@@ -82,11 +82,16 @@ def user_profile(request, user_id):
         id=user_id
     )
 
+    user_requests = AssetRequestItem.objects.filter(
+        request__created_by=user
+    ).select_related('asset')
+
     return render(
         request,
         "users/user_profile.html",
         {
-            "profile_user": user
+            "profile_user": user,
+            "requests": user_requests,
         }
     )
 
@@ -94,20 +99,19 @@ def user_profile(request, user_id):
 @login_required
 def user_list(request):
 
-    if can_view_all_users(request.user):
-        users = User.objects.all()
-        can_manage_all = True
+    if not can_view_all_users(request.user):
+        return HttpResponseForbidden(
+            "You do not have permission to view users."
+        )
 
-    else:
-        users = [request.user]
-        can_manage_all = False
+    users = User.objects.all()
 
     return render(
         request,
         "users/user_list.html",
         {
             "users": users,
-            "can_manage_all": can_manage_all
+            "can_manage_all": True
         }
     )
 
@@ -173,7 +177,10 @@ def user_edit(request, user_id):
         )
 
         if form.is_valid():
-            form.save()
+            edited_user = form.save(commit=False)
+            edited_user.save()
+            if can_manage_groups:
+                form.save_m2m()
             return redirect("assets:user_list")
 
     else:
@@ -365,6 +372,17 @@ def asset_edit(request, asset_id):
 
 
 @login_required
+@permission_required("assets.delete_asset", raise_exception=True)
+def asset_delete(request, asset_id):
+    asset = get_object_or_404(Asset, id=asset_id)
+    if request.method == "POST":
+        asset.delete()
+        messages.success(request, f"Asset '{asset.name}' deleted successfully.")
+        return redirect("assets:asset_list")
+    return render(request, "assets/delete_asset.html", {"asset": asset})
+
+
+@login_required
 @permission_required("assets.view_assetrequest", raise_exception=True)
 def request_list(request):
     can_view_pending = request.user.has_perm("assets.view_pending_requests")
@@ -372,16 +390,16 @@ def request_list(request):
     can_approve      = request.user.has_perm("assets.approve_request")
 
     if can_view_pending:
-        pending = AssetRequest.objects.filter(
-            status=AssetRequest.FOR_APPROVAL
-        ).prefetch_related('items__asset').order_by('-created_at')
+        pending_qs = AssetRequest.objects.filter(status=AssetRequest.FOR_APPROVAL)
+        if not can_approve:
+            pending_qs = pending_qs.filter(created_by=request.user)
+        pending = pending_qs.prefetch_related('items__asset').order_by('-created_at')
     else:
         pending = AssetRequest.objects.none()
 
     if can_view_history:
-        # Approvers and admins see all history; everyone else sees only their own
-        qs = AssetRequest.objects if can_approve else AssetRequest.objects.filter(created_by=request.user)
-        history = qs.prefetch_related('items__asset').order_by('-created_at')
+        history_qs = AssetRequest.objects.all() if can_approve else AssetRequest.objects.filter(created_by=request.user)
+        history = history_qs.prefetch_related('items__asset').order_by('-created_at')
     else:
         history = AssetRequest.objects.none()
 

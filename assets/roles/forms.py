@@ -51,8 +51,18 @@ class GroupForm(forms.ModelForm):
         asset_request_ct = ContentType.objects.get_for_model(AssetRequest)
         group_ct = ContentType.objects.get_for_model(Group)
 
-        asset_ids = set(Permission.objects.filter(content_type=asset_ct).values_list('id', flat=True))
-        request_ids = set(Permission.objects.filter(content_type=asset_request_ct).values_list('id', flat=True))
+        # approve_request is defined on Asset model but belongs under Request Management
+        asset_ids = set(
+            Permission.objects.filter(content_type=asset_ct)
+            .exclude(codename='approve_request')
+            .values_list('id', flat=True)
+        )
+        request_ids = set(
+            Permission.objects.filter(
+                Q(content_type=asset_request_ct) |
+                Q(content_type=asset_ct, codename='approve_request')
+            ).values_list('id', flat=True)
+        )
         user_ids = set(Permission.objects.filter(content_type=user_ct).values_list('id', flat=True))
         group_ids = set(Permission.objects.filter(content_type=group_ct).values_list('id', flat=True))
 

@@ -10,13 +10,15 @@ from assets.utils.permissions import is_admin_user
 from .forms import GroupForm
 
 # ROLE LIST
-class RoleListView(LoginRequiredMixin, ListView):
+class RoleListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+    permission_required = "auth.view_group"
     model = Group
     template_name = "roles/role_list.html"
     context_object_name = "groups"
 
 # ROLE DETAIL
-class RoleDetailView(LoginRequiredMixin, DetailView):
+class RoleDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
+    permission_required = "auth.view_group"
     model = Group
     template_name = "roles/role_detail.html"
     context_object_name = "role"

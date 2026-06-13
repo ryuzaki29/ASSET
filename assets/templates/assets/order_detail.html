@@ -467,16 +467,26 @@
                 ← Back to Assets
             </a>
 
+            {% if perms.assets.change_asset %}
             <a href="{% url 'assets:asset_edit' asset.id %}"
                class="btn btn-primary">
                 Edit Asset
             </a>
+            {% endif %}
+
+            {% if perms.assets.delete_asset %}
+            <a href="{% url 'assets:asset_delete' asset.id %}"
+               class="btn btn-secondary" style="background:#b91c1c; color:white; border-color:#b91c1c;">
+                Delete Asset
+            </a>
+            {% endif %}
 
         </div>
 
     </div>
 
     <!-- AUDIT LOG TABLE -->
+    {% if perms.assets.audit_assets %}
     <div class="table-section" style="margin-top:28px;">
         <div class="section-title" style="font-size:20px; margin-bottom:20px;">
             <i class="bi bi-clock-history"></i> Audit Log
@@ -518,6 +528,7 @@
             </tbody>
         </table>
     </div>
+    {% endif %}
 
 </div>
 

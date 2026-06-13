@@ -35,9 +35,7 @@ class Asset(models.Model):
         verbose_name_plural = "Assets"
         
         permissions = [
-            ("view_reports", "Can View Reports"),
             ("audit_assets", "Can Audit Assets"),
-            ("manage_inventory", "Can Manage Inventory"),
             ("request_asset", "Can Request Asset"),
             ("approve_request", "Can Approve Request"),
         ]

@@ -17,9 +17,7 @@ ROLE_PERMISSIONS = {
         "add_asset",
         "change_asset",
         "delete_asset",
-        "view_reports",
         "audit_assets",
-        "manage_inventory",
         # Request Management
         "view_assetrequest",
         "view_pending_requests",
