@@ -34,11 +34,12 @@ class Asset(models.Model):
         verbose_name = "Asset"
         verbose_name_plural = "Assets"
         
-        #Added custom permissions for asset management
         permissions = [
             ("view_reports", "Can View Reports"),
             ("audit_assets", "Can Audit Assets"),
             ("manage_inventory", "Can Manage Inventory"),
+            ("request_asset", "Can Request Asset"),
+            ("approve_request", "Can Approve Request"),
         ]
 
 
@@ -80,6 +81,12 @@ class AssetRequest(models.Model):
 
     def __str__(self):
         return f"Request #{self.id} by {self.requestor_name}"
+
+    class Meta:
+        permissions = [
+            ("view_pending_requests", "Can View Pending Request Table"),
+            ("view_request_history", "Can View Request History Table"),
+        ]
 
 
 class AssetLog(models.Model):

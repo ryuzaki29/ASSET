@@ -515,17 +515,23 @@
         </div>
 
         <div class="header-actions">
+            {% if perms.assets.audit_assets %}
             <button type="button" class="create-btn" data-bs-toggle="modal" data-bs-target="#auditLogModal">
                 <i class="bi bi-clock-history"></i> Audit Log
             </button>
+            {% endif %}
 
+            {% if perms.assets.add_asset %}
             <a href="{% url 'assets:asset_create' %}" class="create-btn">
                 + Add Asset
             </a>
+            {% endif %}
 
+            {% if perms.assets.request_asset %}
             <button type="button" class="request-btn" data-bs-toggle="modal" data-bs-target="#requestModal">
                 Request Asset
             </button>
+            {% endif %}
         </div>
 
     </div>

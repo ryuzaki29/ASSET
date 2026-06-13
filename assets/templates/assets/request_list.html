@@ -396,6 +396,7 @@
      PENDING REQUESTS
 ========================================= -->
 
+{% if can_view_pending %}
 <div class="table-section">
 
     <h2 class="section-title">
@@ -475,6 +476,7 @@
 
                         <div class="action-buttons">
 
+                            {% if can_approve %}
                             <!-- APPROVE -->
                             <form id="approveForm{{ req.id }}"
                                   method="post"
@@ -505,6 +507,7 @@
                                     data-request-name="{{ req.requestor_name|escapejs }}">
                                 Decline
                             </button>
+                            {% endif %}
 
                         </div>
 
@@ -662,10 +665,13 @@
     </div>
 </div>
 
+{% endif %}
+
 <!-- =========================================
      REQUEST HISTORY
 ========================================= -->
 
+{% if can_view_history %}
 <div class="table-section">
 
     <h2 class="section-title">
@@ -782,5 +788,6 @@
     </div>
 
 </div>
+{% endif %}
 
 {% endblock %}

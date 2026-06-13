@@ -131,24 +131,20 @@ def user_create(request):
 
         Profile.objects.create(user=user)
 
-        group_id = request.POST.get("group")
-
-        if group_id:
-            group = get_object_or_404(Group, id=group_id)
-            user.groups.add(group)
+        selected_groups = form.cleaned_data.get("groups")
+        if selected_groups:
+            user.groups.set(selected_groups)
 
         return redirect("assets:user_list")
-
-    groups = Group.objects.all().order_by("name")
 
     return render(
         request,
         "users/user_form.html",
         {
             "form": form,
-            "groups": groups,
             "title": "Create User",
-            "can_manage_groups": True
+            "is_admin_editing": True,
+            "can_manage_groups": True,
         }
     )
 
@@ -369,18 +365,38 @@ def asset_edit(request, asset_id):
 
 
 @login_required
+@permission_required("assets.view_assetrequest", raise_exception=True)
 def request_list(request):
-    """List requests that are currently 'For Approval' and show all requests in history."""
-    pending = AssetRequest.objects.filter(status=AssetRequest.FOR_APPROVAL).prefetch_related('items__asset').order_by('-created_at')
-    history = AssetRequest.objects.prefetch_related('items__asset').order_by('-created_at')
+    can_view_pending = request.user.has_perm("assets.view_pending_requests")
+    can_view_history = request.user.has_perm("assets.view_request_history")
+    can_approve      = request.user.has_perm("assets.approve_request")
+
+    if can_view_pending:
+        pending = AssetRequest.objects.filter(
+            status=AssetRequest.FOR_APPROVAL
+        ).prefetch_related('items__asset').order_by('-created_at')
+    else:
+        pending = AssetRequest.objects.none()
+
+    if can_view_history:
+        # Approvers and admins see all history; everyone else sees only their own
+        qs = AssetRequest.objects if can_approve else AssetRequest.objects.filter(created_by=request.user)
+        history = qs.prefetch_related('items__asset').order_by('-created_at')
+    else:
+        history = AssetRequest.objects.none()
+
     context = {
-        'requests': pending,
-        'history': history
+        'requests':         pending,
+        'history':          history,
+        'can_view_pending': can_view_pending,
+        'can_view_history': can_view_history,
+        'can_approve':      can_approve,
     }
     return render(request, 'assets/request_list.html', context)
 
 
 @login_required
+@permission_required("assets.request_asset", raise_exception=True)
 def request_create(request):
     if request.method == "POST":
         # Collect basic fields
@@ -422,6 +438,7 @@ def request_create(request):
 
 
 @login_required
+@permission_required("assets.approve_request", raise_exception=True)
 def request_approve(request, request_id):
     if request.method != 'POST':
         return redirect('assets:request_list')
@@ -466,6 +483,7 @@ def request_approve(request, request_id):
 
 
 @login_required
+@permission_required("assets.approve_request", raise_exception=True)
 def request_decline(request, request_id):
     if request.method != 'POST':
         return redirect('assets:request_list')

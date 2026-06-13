@@ -14,6 +14,13 @@ class UserRegistrationForm(forms.ModelForm):
         label="Confirm Password"
     )
 
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.none(),
+        required=False,
+        label="Roles",
+        widget=forms.CheckboxSelectMultiple,
+    )
+
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email']
@@ -23,6 +30,10 @@ class UserRegistrationForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['groups'].queryset = Group.objects.order_by('name')
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
