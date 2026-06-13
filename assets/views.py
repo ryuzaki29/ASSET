@@ -5,9 +5,22 @@ from django.db import transaction
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.generic import TemplateView
-from .forms import UserRegistrationForm, UserEditForm 
+from django.contrib.auth.views import LoginView
+from .forms import UserRegistrationForm, UserEditForm
 from .models import Asset, AssetRequest, AssetRequestItem, AssetLog, Profile
 from django.contrib.auth.mixins import PermissionRequiredMixin
+
+
+class CustomLoginView(LoginView):
+    def form_valid(self, form):
+        user = form.get_user()
+        if not user.groups.exists():
+            messages.warning(
+                self.request,
+                "Your account does not have a role assigned yet. Please contact an administrator."
+            )
+            return redirect("login")
+        return super().form_valid(form)
 
 
 def can_view_all_users(user):
@@ -41,7 +54,6 @@ def landing(request):
 from django.contrib.auth.models import User, Group
 
 def register_view(request):
-    from django.contrib.auth import login as auth_login
     form = UserRegistrationForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -52,9 +64,8 @@ def register_view(request):
 
         Profile.objects.create(user=user)
 
-        auth_login(request, user)
-        messages.success(request, f"Account created successfully! Welcome, {user.first_name or user.username}.")
-        return redirect("home")
+        messages.success(request, "Account registered successfully! Please wait for an administrator to assign your role before you can log in.")
+        return redirect("login")
 
     return render(
         request,
