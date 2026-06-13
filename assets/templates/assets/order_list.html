@@ -967,13 +967,23 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <td style="padding:0 6px;">
                                     <input type="date" id="auditFilterTo" class="form-control form-control-sm">
                                 </td>
-                                <td style="padding:0 0 0 6px;">
-                                    <select id="auditFilterAction" class="form-select form-select-sm">
-                                        <option value="">All Actions</option>
-                                        <option value="Created">Created</option>
-                                        <option value="Edited">Edited</option>
-                                        <option value="Stock Added">Stock Added</option>
-                                    </select>
+                                <td style="padding:0 0 0 6px; position:relative;">
+                                    <div style="position:relative;">
+                                        <button type="button" id="auditActionDropdownBtn" class="form-select form-select-sm text-start" style="cursor:pointer;">
+                                            <span id="auditActionLabel">All Actions</span>
+                                        </button>
+                                        <div id="auditActionDropdown" style="display:none; position:absolute; top:100%; left:0; z-index:9999; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.12); width:100%; padding:6px 0; margin-top:4px;">
+                                            <label style="display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; font-size:13px; white-space:nowrap; user-select:none;">
+                                                <input type="checkbox" class="audit-action-cb" value="Created" style="width:15px; height:15px; cursor:pointer; accent-color:#8a1538;"> Created
+                                            </label>
+                                            <label style="display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; font-size:13px; white-space:nowrap; user-select:none;">
+                                                <input type="checkbox" class="audit-action-cb" value="Edited" style="width:15px; height:15px; cursor:pointer; accent-color:#8a1538;"> Edited
+                                            </label>
+                                            <label style="display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; font-size:13px; white-space:nowrap; user-select:none;">
+                                                <input type="checkbox" class="audit-action-cb" value="Stock Added" style="width:15px; height:15px; cursor:pointer; accent-color:#8a1538;"> Stock Added
+                                            </label>
+                                        </div>
+                                    </div>
                                     <button type="button" id="auditFilterClear" style="background:none; border:none; padding:2px 0 0; font-size:12px; color:#9b1a3b; cursor:pointer; text-decoration:underline; display:block; text-align:left;">Clear</button>
                                 </td>
                             </tr>
@@ -1185,9 +1195,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 language: { emptyTable: 'No audit records yet.' }
             });
 
-            // Action column
-            document.getElementById('auditFilterAction').addEventListener('change', function () {
-                auditModalDT.column(2).search(this.value).draw();
+            // Action dropdown toggle
+            var actionDropdownBtn = document.getElementById('auditActionDropdownBtn');
+            var actionDropdown    = document.getElementById('auditActionDropdown');
+            actionDropdownBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                actionDropdown.style.display = actionDropdown.style.display === 'none' ? 'block' : 'none';
+            });
+            document.addEventListener('click', function () {
+                actionDropdown.style.display = 'none';
+            });
+            actionDropdown.addEventListener('click', function (e) { e.stopPropagation(); });
+
+            // Action checkboxes
+            document.querySelectorAll('.audit-action-cb').forEach(function (cb) {
+                cb.addEventListener('change', function () {
+                    var checked = Array.from(document.querySelectorAll('.audit-action-cb:checked')).map(function (c) { return c.value; });
+                    if (checked.length === 0) {
+                        document.getElementById('auditActionLabel').textContent = 'All Actions';
+                        auditModalDT.column(2).search('').draw();
+                    } else {
+                        document.getElementById('auditActionLabel').textContent = checked.join(', ');
+                        auditModalDT.column(2).search(checked.join('|'), true, false).draw();
+                    }
+                });
             });
 
             // Date range — redraw triggers the custom search function
@@ -1200,9 +1231,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Clear all filters
             document.getElementById('auditFilterClear').addEventListener('click', function () {
-                document.getElementById('auditFilterFrom').value   = '';
-                document.getElementById('auditFilterTo').value     = '';
-                document.getElementById('auditFilterAction').value = '';
+                document.getElementById('auditFilterFrom').value = '';
+                document.getElementById('auditFilterTo').value   = '';
+                document.querySelectorAll('.audit-action-cb').forEach(function (cb) { cb.checked = false; });
+                document.getElementById('auditActionLabel').textContent = 'All Actions';
                 auditModalDT.column(2).search('');
                 auditModalDT.draw();
             });
