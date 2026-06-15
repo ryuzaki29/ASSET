@@ -85,45 +85,58 @@
                     <a class="" href="{% url 'home' %}">
                         Home
                     </a>
-    
+
                     {% if user.is_authenticated %}
-                        <a class="" href="{% url 'assets:asset_list' %}">
-                            Assets
-                        </a>
-
-                        <a class="" href="{% url 'assets:request_list' %}">
-                            My Requests
-                        </a>
-        
-                        <a class="" href="{% url 'assets:user_list' %}">
-                            Users
-                        </a>
-
-                        <div class="dropdown">
-                            <a class="dropdown-toggle" href="#" id="rolesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Roles
+                        {% if perms.assets.view_asset %}
+                            <a class="" href="{% url 'assets:asset_list' %}">
+                                Assets
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="rolesDropdown" style="background: #ffffff;">
-                                <li>
-                                    <a class="dropdown-item text-dark m-0 py-2 px-3" href="{% url 'roles:role_list' %}">
-                                        View Roles
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item text-dark m-0 py-2 px-3" href="{% url 'roles:role_create' %}">
-                                        Add New Role
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-        
+                        {% endif %}
+
+                        {% if perms.assets.view_assetrequest %}
+                            <a class="" href="{% url 'assets:request_list' %}">
+                                My Requests
+                            </a>
+                        {% endif %}
+
+                        {% if perms.auth.view_user %}
+                            <a class="" href="{% url 'assets:user_list' %}">
+                                Users
+                            </a>
+                        {% endif %}
+
+                        {% if perms.auth.view_group or perms.auth.add_group or perms.auth.change_group or perms.auth.delete_group %}
+                            <div class="dropdown">
+                                <a class="dropdown-toggle" href="#" id="rolesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Roles
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="rolesDropdown" style="background: #ffffff;">
+                                    <li>
+                                        <a class="dropdown-item text-dark m-0 py-2 px-3" href="{% url 'roles:role_list' %}">
+                                            View Roles
+                                        </a>
+                                    </li>
+                                    {% if perms.auth.add_group %}
+                                        <li>
+                                            <a class="dropdown-item text-dark m-0 py-2 px-3" href="{% url 'roles:role_create' %}">
+                                                Add New Role
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
                     {% endif %}
                 </div>
             </div>
     
             <!-- Right Section for Login/Logout -->
-            <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center gap-3">
                 {% if user.is_authenticated %}
+                    <a href="{% url 'assets:user_profile' user.id %}" style="color:white; font-size:14px; font-weight:600; text-decoration:none;">
+                        Hello, {{ user.get_full_name|default:user.username }}!
+                    </a>
                     <form method="post" action="{% url 'logout' %}" class="m-0">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-nav btn-sm py-2">

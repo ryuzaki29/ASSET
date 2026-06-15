@@ -268,8 +268,8 @@
         <h1 class="profile-name">{{ profile_user.first_name }} {{ profile_user.last_name }}</h1>
         <p class="profile-designation">
             <i class="bi bi-briefcase"></i>
-            {% if profile_user.profile.designation %}
-                {{ profile_user.profile.designation }}
+            {% if profile_user.groups.count %}
+                {% for group in profile_user.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
             {% else %}
                 System User
             {% endif %}
@@ -310,7 +310,7 @@
         <div class="requests-grid">
             {% for request in requests %}
                 <div class="request-card">
-                    <div class="request-name">{{ request.asset_name }}</div>
+                    <div class="request-name">{{ request.asset.name }}</div>
                     <div class="request-qty"><i class="bi bi-collection"></i> Quantity: {{ request.quantity }}</div>
                 </div>
             {% endfor %}
