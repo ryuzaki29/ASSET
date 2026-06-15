@@ -3,6 +3,7 @@
 {% block title %}Asset #{{ asset.id }}{% endblock %}
 
 {% block extra_style %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
 <style>
     * {
         box-sizing: border-box;
@@ -220,6 +221,75 @@
         background: #fff1f4;
     }
 
+    .page-message {
+        margin-bottom: 24px;
+        padding: 20px 24px;
+        border-radius: 20px;
+        background: #dcfce7;
+        border: 1px solid #bbf7d0;
+        color: #164e63;
+        box-shadow: 0 10px 24px rgba(16, 185, 129, 0.08);
+    }
+
+    .page-message.error {
+        background: #fee2e2;
+        border-color: #fecaca;
+        color: #991b1b;
+    }
+
+    .table-section {
+        background: white;
+        border-radius: 24px;
+        padding: 28px;
+        margin-bottom: 32px;
+        border: 1px solid #f0d6de;
+        box-shadow: 0 10px 28px rgba(0,0,0,0.05);
+    }
+
+    #auditTable thead {
+        background: #8a1538;
+        color: white;
+    }
+
+    #auditTable thead th {
+        border-color: #6d102c !important;
+    }
+
+    .audit-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .audit-created { background: #dcfce7; color: #166534; }
+    .audit-edited  { background: #fef3c7; color: #92400e; }
+    .audit-stock   { background: #dbeafe; color: #1e40af; }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 8px 14px;
+
+        border-radius: 999px;
+
+        font-size: 12px;
+        font-weight: 700;
+
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-approved {
+        background: #dcfce7;
+        color: #166534;
+    }
+
     /* MOBILE */
     @media (max-width: 768px) {
 
@@ -251,6 +321,10 @@
             width: 100%;
             text-align: center;
         }
+
+        .table-section {
+            padding: 20px;
+        }
     }
 </style>
 {% endblock %}
@@ -273,6 +347,16 @@
         </div>
 
     </div>
+
+    {% if messages %}
+    <div class="table-section" style="margin-top: 10px;">
+        {% for message in messages %}
+            <div class="status-badge {% if message.tags == 'success' %}status-approved{% else %}status-pending{% endif %}" style="display: inline-block; margin-bottom: 10px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <!-- DETAILS -->
     <div class="asset-details">
@@ -383,15 +467,85 @@
                 ← Back to Assets
             </a>
 
+            {% if perms.assets.change_asset %}
             <a href="{% url 'assets:asset_edit' asset.id %}"
                class="btn btn-primary">
                 Edit Asset
             </a>
+            {% endif %}
+
+            {% if perms.assets.delete_asset %}
+            <a href="{% url 'assets:asset_delete' asset.id %}"
+               class="btn btn-secondary" style="background:#b91c1c; color:white; border-color:#b91c1c;">
+                Delete Asset
+            </a>
+            {% endif %}
 
         </div>
 
     </div>
 
+    <!-- AUDIT LOG TABLE -->
+    {% if perms.assets.audit_assets %}
+    <div class="table-section" style="margin-top:28px;">
+        <div class="section-title" style="font-size:20px; margin-bottom:20px;">
+            <i class="bi bi-clock-history"></i> Audit Log
+        </div>
+
+        <table id="auditTable" class="table table-hover table-bordered w-100">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>Performed By</th>
+                    <th>Cost / Unit</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                    <td>
+                        <span class="audit-badge
+                            {% if log.action == 'Created' %}audit-created
+                            {% elif log.action == 'Edited' %}audit-edited
+                            {% else %}audit-stock{% endif %}">
+                            {{ log.action }}
+                        </span>
+                    </td>
+                    <td>{{ log.performed_by.get_full_name|default:log.performed_by.username|default:"—" }}</td>
+                    <td>
+                        {% if log.cost_per_unit %}
+                            ₱{{ log.cost_per_unit }}
+                        {% else %}
+                            <span style="color:#aaa;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ log.notes|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
 </div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    new DataTable('#auditTable', {
+        pageLength: 10,
+        order: [[0, 'desc']],
+        columnDefs: [{ orderable: false, targets: [4] }],
+        language: {
+            emptyTable: "No audit records yet."
+        }
+    });
+});
+</script>
 
 {% endblock %}

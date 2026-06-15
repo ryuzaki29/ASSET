@@ -1,4 +1,3 @@
-<!-- Create / Update Role -->
 {% extends "assets/base.html" %}
 
 {% block title %}{% if object %}Edit Role{% else %}Create Role{% endif %}{% endblock %}
@@ -8,8 +7,8 @@
     * { box-sizing: border-box; }
 
     body {
-        background: #e9eeee;
-        font-family: 'Montserrat', Arial, Helvetica, sans-serif !important;
+        background: linear-gradient(to bottom right, #faf5f0, #f5ede4);
+        font-family: 'Montserrat', Arial, Helvetica, sans-serif;
     }
 
     main {
@@ -46,10 +45,12 @@
 
     .form-label {
         font-weight: 600;
-        font-size: 13px;
+        font-size: 18px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: #555;
+        color: #8a1538;
+        display: block;
+        margin-bottom: 8px;
     }
 
     .form-control, .form-select {
@@ -58,11 +59,89 @@
         border: 1px solid #ccc;
         padding: 10px 14px;
         font-family: inherit;
+        width: 100%;
     }
 
     .form-control:focus, .form-select:focus {
         border-color: #8a1538;
         box-shadow: 0 0 0 0.2rem rgba(138, 21, 56, 0.15);
+    }
+
+    /* Main Section Permissions Title */
+    .permissions-main-title {
+        font-weight: 700;
+        display: block;
+        margin-top: 10px;
+        margin-bottom: 25px;
+        color: #8a1538;
+        font-size: 18px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Individual Management Section Block */
+    .permission-section {
+        margin-bottom: 30px;
+    }
+
+    /* Sub-headers like User Management, Asset Management */
+    .section-heading {
+        font-size: 16px;
+        font-weight: 600;
+        color: #8a1538;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .select-all-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        text-transform: none;
+        color: #495057;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .select-all-checkbox {
+        cursor: pointer;
+        width: 15px;
+        height: 15px;
+    }
+
+    /* The Grid Container - Split evenly into 4 Columns */
+    .permissions-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); 
+        gap: 16px 32px;                        
+        width: 100%;
+    }
+
+    /* Individual Checkbox + Label Layout alignment */
+    .permission-item {
+        display: flex;
+        align-items: center;                   
+        gap: 10px;                             
+    }
+
+    .permission-item label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .permission-item input[type="checkbox"] {
+        cursor: pointer;
+        width: 16px;
+        height: 16px;
+        margin-top: 15px;
     }
 
     .btn-submit {
@@ -98,6 +177,12 @@
         color: white;
     }
 
+    @media (max-width: 768px) {
+        .permissions-grid {
+            grid-template-columns: 1fr; /* Drops to 1 column on smaller devices */
+        }
+    }
+
     @media (max-width: 640px) {
         main { padding: 18px; }
         .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -116,33 +201,40 @@
     <form method="POST">
         {% csrf_token %}
         
-        <div class="mb-3">
-            {{ form.name.label_tag }}
+        <div class="mb-4">
+            <label class="form-label" for="{{ form.name.id_for_label }}">Role Name</label>
             {{ form.name }}
             {% for error in form.name.errors %}
-                <div class="alert alert-danger py-2">
+                <div class="alert alert-danger py-2 mt-2">
                     {{ error }}
                 </div>
             {% endfor %}
         </div>
 
-        <div class="mb-3">
-            {{ form.code.label_tag }}
-            {{ form.code }}
-            {% for error in form.code.errors %}
-                <div class="alert alert-danger py-2">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </div>
+        <div class="mb-5 form-group">
+            <label class="permissions-main-title">Permissions Configuration</label>
+            
+            {% for section_name, checkboxes in form.get_grouped_permissions.items %}
+                {% if checkboxes %}
+                    <div class="permission-section">
+                        <h3 class="section-heading">
+                            {{ section_name }}
+                            <label class="select-all-label">
+                                <input type="checkbox" class="select-all-checkbox" data-section="{{ forloop.counter }}">
+                                Select All
+                            </label>
+                        </h3>
 
-        <div class="mb-3">
-            {{ form.description.label_tag }}
-            {{ form.description }}
-            {% for error in form.description.errors %}
-                <div class="alert alert-danger py-2">
-                    {{ error }}
-                </div>
+                        <div class="permissions-grid" data-section="{{ forloop.counter }}">
+                            {% for checkbox in checkboxes %}
+                                <div class="permission-item">
+                                    {{ checkbox.tag }}
+                                    <label for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
             {% endfor %}
         </div>
 
@@ -153,5 +245,30 @@
 
     </form>
 </div>
+
+<script>
+    document.querySelectorAll('.select-all-checkbox').forEach(function(selectAll) {
+        var section = selectAll.dataset.section;
+        var grid = document.querySelector('.permissions-grid[data-section="' + section + '"]');
+        var checkboxes = grid.querySelectorAll('input[type="checkbox"]');
+
+        function syncSelectAll() {
+            var allChecked = Array.from(checkboxes).every(function(cb) { return cb.checked; });
+            var someChecked = Array.from(checkboxes).some(function(cb) { return cb.checked; });
+            selectAll.checked = allChecked;
+            selectAll.indeterminate = someChecked && !allChecked;
+        }
+
+        syncSelectAll();
+
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(function(cb) { cb.checked = selectAll.checked; });
+        });
+
+        checkboxes.forEach(function(cb) {
+            cb.addEventListener('change', syncSelectAll);
+        });
+    });
+</script>
 
 {% endblock %}
