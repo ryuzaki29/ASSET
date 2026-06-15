@@ -3,6 +3,7 @@
 {% block title %}Assets{% endblock %}
 
 {% block extra_style %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
 <style>
     * {
         box-sizing: border-box;
@@ -68,6 +69,7 @@
         padding: 14px 22px;
         background: white;
         color: #8a1538;
+        border: none;
         border-radius: 14px;
         font-weight: 700;
         font-size: 14px;
@@ -75,6 +77,8 @@
         transition: all 0.25s ease;
         box-shadow: 0 6px 16px rgba(0,0,0,0.12);
         z-index: 1;
+        white-space: nowrap;
+        cursor: pointer;
     }
 
     .create-btn:hover {
@@ -82,98 +86,57 @@
         transform: translateY(-2px);
     }
 
-    /* GRID */
-    .asset-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 24px;
-    }
-
-    /* CARD */
-    .asset-card {
-        position: relative;
-        overflow: hidden;
-        background: white;
-        border-radius: 22px;
-        padding: 24px;
-        transition: all 0.25s ease;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-        border: 1px solid #e8b8c5;
-    }
-
-    .asset-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 6px;
-        background: linear-gradient(to right, #8a1538, #b32552);
-    }
-
-    .asset-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 16px 36px rgba(138, 21, 56, 0.14);
-    }
-
-    /* TITLE */
-    .asset-title {
-        margin: 0;
-        font-size: 22px;
-        font-weight: 700;
-    }
-
-    .asset-title a {
-        text-decoration: none;
-        color: #5c1025;
-        transition: 0.2s ease;
-    }
-
-    .asset-title a:hover {
-        color: #8a1538;
-    }
-
-    /* TYPE BADGE */
-    .asset-type {
-        display: inline-block;
-        margin-top: 14px;
-        padding: 7px 14px;
-        border-radius: 999px;
-        background: #fff1f4;
-        color: #8a1538;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.6px;
-        text-transform: uppercase;
-        border: 1px solid #e8b8c5;
-    }
-
-    /* INFO */
-    .asset-info {
-        margin-top: 22px;
+    .header-actions {
         display: flex;
-        flex-direction: column;
         gap: 16px;
-    }
-
-    .info-row {
-        display: flex;
-        justify-content: space-between;
         align-items: center;
     }
 
-    .label {
-        font-size: 13px;
+    .request-btn {
+        padding: 14px 22px;
+        background: white;
+        color: #8a1538;
+        border: none;
+        border-radius: 14px;
         font-weight: 700;
-        color: #8b5c6b;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        z-index: 1;
+        cursor: pointer;
+    }
+
+    .request-btn:hover {
+        background: #fff1f4;
+        transform: translateY(-2px);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    .value {
-        color: #4a1021;
-        font-weight: 700;
-        font-size: 15px;
+    .status-approved {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-declined {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
     }
 
     /* STATUS */
@@ -201,42 +164,151 @@
         color: #92400e;
     }
 
-    /* ACTIONS */
-    .card-actions {
-        display: flex;
-        gap: 12px;
-        margin-top: 24px;
+    .modal-content {
+        border-radius: 24px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16);
     }
 
-    .btn {
-        flex: 1;
-        text-align: center;
-        padding: 12px;
-        border-radius: 12px;
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: 700;
-        transition: all 0.25s ease;
-    }
-
-    .btn-primary {
-        background: linear-gradient(to right, #8a1538, #6d102c);
+    .modal-header {
+        background: linear-gradient(135deg, #8a1538, #6d102c);
         color: white;
+        border-bottom: none;
+        padding: 28px 32px;
     }
 
-    .btn-primary:hover {
-        opacity: 0.95;
-        transform: translateY(-2px);
+    .modal-title {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 800;
     }
 
-    .btn-secondary {
+    .modal-body {
+        padding: 32px;
         background: #fff7f9;
+    }
+
+    .modal-body .form-label {
+        color: #5c1025;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .modal-body .form-control,
+    .modal-body .form-select {
+        border-radius: 16px;
+        border: 1px solid #e8b8c5;
+        background: white;
+        padding: 14px 16px;
+        min-height: 48px;
+        box-shadow: inset 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .asset-row {
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1d4dc;
+    }
+
+    .asset-row:last-child {
+        border-bottom: none;
+    }
+
+    .asset-row .asset-select {
+        flex: 2;
+    }
+
+    .asset-row .asset-qty {
+        width: 84px;
+    }
+
+    .asset-row .add-asset-btn,
+    .asset-row .remove-asset-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        border: none;
+        background: #8a1538;
+        color: white;
+        font-size: 20px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+
+    .asset-row .remove-asset-btn {
+        background: #f8d7da;
+        color: #8a1538;
+    }
+
+    .asset-row .add-asset-btn:hover,
+    .asset-row .remove-asset-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .selected-items-card {
+        margin-top: 16px;
+        border-radius: 20px;
+        border: 1px solid #e8b8c5;
+        background: white;
+        padding: 18px;
+        box-shadow: 0 8px 20px rgba(138, 21, 56, 0.08);
+    }
+
+    .selected-items-card .list-group-item {
+        background: transparent;
+        border: none;
+        padding-left: 0;
+        padding-right: 0;
+        color: #47212d;
+    }
+
+    .selected-items-card .list-group-item + .list-group-item {
+        border-top: 1px solid #f1d4dc;
+    }
+
+    .invalid-feedback {
+        display: block;
+        color: #991b1b;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+
+    .modal-footer {
+        padding: 24px 32px;
+        border-top: none;
+        background: #fff7f9;
+    }
+
+    .modal-footer button {
+        min-width: 140px;
+    }
+
+    .close-modal-btn {
+        background: #ffffff;
         border: 1px solid #e8b8c5;
         color: #8a1538;
     }
 
-    .btn-secondary:hover {
+    .close-modal-btn:hover {
         background: #fff1f4;
+    }
+
+    @media (max-width: 768px) {
+        .asset-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .asset-row .asset-qty,
+        .asset-row .add-asset-btn,
+        .asset-row .remove-asset-btn {
+            width: 100%;
+        }
     }
 
     /* EMPTY STATE */
@@ -247,6 +319,123 @@
         border-radius: 24px;
         border: 1px solid #e8b8c5;
         box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    .table-section {
+        background: white;
+        border-radius: 24px;
+        padding: 28px;
+        margin-bottom: 32px;
+        border: 1px solid #f0d6de;
+        box-shadow: 0 10px 28px rgba(0,0,0,0.05);
+    }
+
+    #assetsTable thead {
+        background: #8a1538;
+        color: white;
+    }
+
+    #assetsTable thead th {
+        border-color: #6d102c !important;
+    }
+
+    .tbl-actions-wrap {
+        display: flex;
+        gap: 6px;
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+    .tbl-action {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: opacity 0.2s;
+        white-space: nowrap;
+        cursor: pointer;
+        border: none;
+    }
+
+    .tbl-action:hover { opacity: 0.85; }
+
+    .tbl-view   { background: #8a1538; color: white; }
+    .tbl-edit   { border: 1px solid #8a1538; color: #8a1538; background: white; }
+    .tbl-delete { background: #b91c1c; color: white; }
+    .tbl-stock { background: #005941; color: white; }
+    .tbl-audit { background: #4338ca; color: white; }
+
+    .audit-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+    .audit-created { background: #dcfce7; color: #166534; }
+    .audit-edited  { background: #fef3c7; color: #92400e; }
+    .audit-stock   { background: #dbeafe; color: #1e40af; }
+
+    #auditLogModal .modal-content { border-radius: 24px; overflow: hidden; border: none; box-shadow: 0 20px 40px rgba(0,0,0,0.14); }
+    #auditLogModal .modal-header  { background: linear-gradient(135deg, #8a1538, #6d102c); color: white; border-bottom: none; padding: 26px 30px; }
+    #auditLogModal .modal-body    { background: #fff7f9; padding: 28px; }
+    #auditLogModal .modal-footer  { background: #fff7f9; border-top: none; padding: 20px 30px; }
+    #auditLogModal #auditModalTable thead { background: #8a1538; color: white; }
+    #auditLogModal #auditModalTable thead th { border-color: #6d102c !important; }
+
+    .audit-filter-bar {
+        background: white;
+        border: 1px solid #e8b8c5;
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-bottom: 18px;
+    }
+
+    .audit-filter-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #8a1538;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .audit-filter-bar .form-control,
+    .audit-filter-bar .form-select {
+        border-radius: 10px;
+        border: 1px solid #e8b8c5;
+        font-size: 13px;
+        padding: 7px 10px;
+        background: #fff7f9;
+    }
+
+    .audit-filter-bar .form-control:focus,
+    .audit-filter-bar .form-select:focus {
+        border-color: #8a1538;
+        box-shadow: 0 0 0 3px rgba(138,21,56,0.10);
+    }
+
+    .audit-clear-btn {
+        padding: 7px 18px;
+        border-radius: 10px;
+        border: 1px solid #e8b8c5;
+        background: white;
+        color: #8a1538;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .audit-clear-btn:hover {
+        background: #8a1538;
+        color: white;
+        border-color: #8a1538;
     }
 
     .empty-state h2 {
@@ -304,16 +493,8 @@
             font-size: 30px;
         }
 
-        .asset-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .card-actions {
-            flex-direction: column;
-        }
-
-        .btn {
-            width: 100%;
+        .table-section {
+            padding: 20px;
         }
     }
 </style>
@@ -334,107 +515,809 @@
             </div>
         </div>
 
-        <a href="{% url 'assets:asset_create' %}" class="create-btn">
-            + Add Asset
-        </a>
+        <div class="header-actions">
+            {% if perms.assets.audit_assets %}
+            <button type="button" class="create-btn" data-bs-toggle="modal" data-bs-target="#auditLogModal">
+                <i class="bi bi-clock-history"></i> Audit Log
+            </button>
+            {% endif %}
 
-    </div>
+            {% if perms.assets.add_asset %}
+            <a href="{% url 'assets:asset_create' %}" class="create-btn">
+                + Add Asset
+            </a>
+            {% endif %}
 
-    {% if assets %}
-
-    <!-- GRID -->
-    <div class="asset-grid">
-
-        {% for asset in assets %}
-        <div class="asset-card">
-
-            <!-- TITLE -->
-            <h2 class="asset-title">
-                <a href="{% url 'assets:asset_detail' asset.id %}">
-                    {{ asset.name }}
-                </a>
-            </h2>
-
-            <!-- TYPE -->
-            <div class="asset-type">
-                {{ asset.get_asset_type_display }}
-            </div>
-
-            <!-- INFO -->
-            <div class="asset-info">
-
-                <div class="info-row">
-                    <span class="label">Asset ID</span>
-                    <span class="value">#{{ asset.id }}</span>
-                </div>
-
-                <div class="info-row">
-                    <span class="label">Category</span>
-                    <span class="value">{{ asset.category }}</span>
-                </div>
-
-                <div class="info-row">
-                    <span class="label">Quantity</span>
-                    <span class="value">{{ asset.quantity }}</span>
-                </div>
-
-                <div class="info-row">
-                    <span class="label">Status</span>
-
-                    <span class="status
-                        {% if asset.status == 'Active' %}
-                            status-active
-                        {% elif asset.status == 'Inactive' %}
-                            status-inactive
-                        {% else %}
-                            status-maintenance
-                        {% endif %}
-                    ">
-                        {{ asset.status }}
-                    </span>
-                </div>
-
-            </div>
-
-            <!-- ACTIONS -->
-            <div class="card-actions">
-
-                <a href="{% url 'assets:asset_detail' asset.id %}"
-                   class="btn btn-primary">
-                    View Details
-                </a>
-
-                <a href="{% url 'assets:asset_edit' asset.id %}"
-                   class="btn btn-secondary">
-                    Edit
-                </a>
-
-            </div>
-
+            {% if perms.assets.request_asset %}
+            <button type="button" class="request-btn" data-bs-toggle="modal" data-bs-target="#requestModal">
+                Request Asset
+            </button>
+            {% endif %}
         </div>
-        {% endfor %}
 
     </div>
 
-    {% else %}
-
-    <!-- EMPTY STATE -->
-    <div class="empty-state">
-
-        <h2>No Assets Available</h2>
-
-        <p>
-            No assets have been added to the inventory system yet.
-        </p>
-
-        <a href="{% url 'assets:asset_create' %}" class="create-btn">
-            + Create First Asset
-        </a>
-
-    </div>
-
+    {% if messages %}
+        <div class="table-section" style="margin-top: 10px;">
+            {% for message in messages %}
+                <div class="status-badge {% if message.tags == 'success' %}status-approved{% elif message.tags == 'error' %}status-declined{% else %}status-pending{% endif %}" style="display: inline-block; margin-bottom: 10px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
     {% endif %}
 
+    <!-- Request Asset Modal -->
+    <div class="modal fade" id="requestModal" tabindex="-1" aria-labelledby="requestModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="requestModalLabel">Request Asset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="requestForm" method="post" action="{% url 'assets:request_create' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="requestorName" class="form-label">Requestor Name</label>
+                            <input type="text" class="form-control" id="requestorName" name="requestorName" value="{{ user.get_full_name|default:user.username }}" readonly style="background:#f8f0f3; cursor:not-allowed;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="requestorGroup" class="form-label">Requestor Group</label>
+                            <input type="text" class="form-control" id="requestorGroup" name="requestorGroup" placeholder="Enter requestor group">
+                        </div>
+                        
+                            <div class="mb-3">
+                            <label class="form-label">Assets</label>
+                            <div id="assetRows">
+                                <div class="asset-row d-flex align-items-center mb-2">
+                                    <select class="form-select asset-select" name="asset_select[]">
+                                        <option value="" selected disabled>Select asset</option>
+                                        {% for asset in assets %}
+                                            <option value="{{ asset.id }}" data-name="{{ asset.name }}" data-available="{{ asset.quantity }}">{{ asset.name }} (Available: {{ asset.quantity }})</option>
+                                        {% endfor %}
+                                    </select>
+
+                                    <input type="number" class="form-control form-control-sm asset-qty" name="asset_qty[]" min="1" value="1">
+
+                                    <button type="button" class="add-asset-btn">+</button>
+                                    <button type="button" class="remove-asset-btn">−</button>
+                                    <div class="invalid-feedback" style="display:none;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 selected-items-card">
+                            <label class="form-label mb-3">Selected Items</label>
+                            <ul id="selectedList" class="list-group"></ul>
+                        </div>
+                        <div class="mb-3">
+                            <label for="requestReason" class="form-label">Reason</label>
+                            <textarea class="form-control" id="requestReason" name="requestReason" rows="3" placeholder="Describe why you need this asset"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn close-modal-btn" data-bs-dismiss="modal">Close</button>
+                    <button id="submitRequestBtn" type="submit" form="requestForm" class="btn btn-primary">Send Request</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLE VIEW -->
+    <div class="table-section">
+        <table id="assetsTable" class="table table-hover table-bordered align-middle w-100">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in assets %}
+                <tr>
+                    <td>{{ asset.id }}</td>
+                    <td>{{ asset.name }}</td>
+                    <td>{{ asset.get_asset_type_display }}</td>
+                    <td>{{ asset.category }}</td>
+                    <td>{{ asset.quantity }}</td>
+                    <td>
+                        <span class="status
+                            {% if asset.status == 'Active' %}status-active
+                            {% elif asset.status == 'Inactive' %}status-inactive
+                            {% else %}status-maintenance{% endif %}">
+                            {{ asset.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="tbl-actions-wrap">
+                            <a href="{% url 'assets:asset_detail' asset.id %}" class="tbl-action tbl-view">View</a>
+                            {% if perms.assets.change_asset %}
+                            <a href="{% url 'assets:asset_edit' asset.id %}" class="tbl-action tbl-edit">Edit</a>
+                            {% endif %}
+                            {% if perms.assets.delete_asset %}
+                            <a href="{% url 'assets:asset_delete' asset.id %}" class="tbl-action tbl-delete">Delete</a>
+                            {% endif %}
+                            {% if perms.assets.change_asset %}
+                            <button type="button"
+                                    class="tbl-action tbl-stock add-stock-btn"
+                                    data-asset-id="{{ asset.id }}"
+                                    data-asset-name="{{ asset.name|escapejs }}"
+                                    data-asset-qty="{{ asset.quantity }}">
+                                + Stock
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var container = document.getElementById('assetRows');
+
+    function attachRowEvents(row){
+        var select = row.querySelector('.asset-select');
+        var qty = row.querySelector('.asset-qty');
+
+        if(select){
+            select.addEventListener('change', function(){
+                syncQtyMax(row);
+                validateRow(row);
+                updateSummary();
+            });
+        }
+
+        if(qty){
+            qty.addEventListener('input', function(){
+                validateRow(row);
+                updateSummary();
+            });
+        }
+    }
+
+    function makeRow(){
+        var row = document.createElement('div');
+        row.className = 'asset-row d-flex align-items-center mb-2';
+
+        var select = document.createElement('select');
+        select.className = 'form-select asset-select';
+        select.name = 'asset_select[]';
+        var defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.selected = true;
+        defaultOpt.disabled = true;
+        defaultOpt.textContent = 'Select asset';
+        select.appendChild(defaultOpt);
+        // populate options from a template copy
+        var template = document.querySelector('#assetRows .asset-select');
+        if(template){
+            template.querySelectorAll('option').forEach(function(opt){
+                if(opt.value === '') return;
+                var o = document.createElement('option');
+                o.value = opt.value;
+                o.textContent = opt.textContent;
+                o.dataset.name = opt.dataset.name;
+                o.dataset.available = opt.dataset.available;
+                select.appendChild(o);
+            });
+        }
+
+        var qty = document.createElement('input');
+        qty.type = 'number';
+        qty.className = 'form-control form-control-sm asset-qty';
+        qty.name = 'asset_qty[]';
+        qty.min = 1;
+        qty.value = 1;
+        qty.max = 999999;
+
+        var addBtn = document.createElement('button');
+        addBtn.type = 'button';
+        addBtn.className = 'add-asset-btn';
+        addBtn.textContent = '+';
+
+        var removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-asset-btn';
+        removeBtn.textContent = '−';
+
+        var error = document.createElement('div');
+        error.className = 'invalid-feedback';
+        error.style.display = 'none';
+        error.textContent = '';
+
+        row.appendChild(select);
+        row.appendChild(qty);
+        row.appendChild(addBtn);
+        row.appendChild(removeBtn);
+        row.appendChild(error);
+
+        attachRowEvents(row);
+        return row;
+    }
+
+    function getSelectedAssetCounts(){
+        var counts = {};
+        container.querySelectorAll('.asset-select').forEach(function(select){
+            if(select && select.value){
+                counts[select.value] = (counts[select.value] || 0) + 1;
+            }
+        });
+        return counts;
+    }
+
+    function refreshSelectOptions(){
+        var selectedCounts = getSelectedAssetCounts();
+        container.querySelectorAll('.asset-select').forEach(function(select){
+            var currentValue = select.value;
+            select.querySelectorAll('option').forEach(function(opt){
+                if(!opt.value) return;
+                if(opt.value === currentValue){
+                    opt.disabled = false;
+                } else {
+                    opt.disabled = selectedCounts[opt.value] > 0;
+                }
+            });
+        });
+    }
+
+    function syncQtyMax(row){
+        var select = row.querySelector('.asset-select');
+        var qty = row.querySelector('.asset-qty');
+        if(!select || !qty){
+            return;
+        }
+        var selectedOption = select.options[select.selectedIndex];
+        if(selectedOption && select.value){
+            var available = parseInt(selectedOption.dataset.available || '0', 10);
+            qty.max = available > 0 ? available : 1;
+            if(parseInt(qty.value || '0', 10) > available){
+                qty.value = available > 0 ? available : 1;
+            }
+        } else {
+            qty.removeAttribute('max');
+            qty.max = 999999;
+        }
+    }
+
+    function validateRow(row){
+        var select = row.querySelector('.asset-select');
+        var qty = row.querySelector('.asset-qty');
+        var error = row.querySelector('.invalid-feedback');
+        if(!select || !qty || !error){
+            return true;
+        }
+
+        var selectedOption = select.options[select.selectedIndex];
+        if(!select.value || !selectedOption){
+            qty.classList.remove('is-invalid');
+            error.style.display = 'none';
+            return true;
+        }
+
+        var selectedCounts = getSelectedAssetCounts();
+        if(selectedCounts[select.value] > 1){
+            qty.classList.add('is-invalid');
+            error.textContent = 'This asset has already been selected in another row.';
+            error.style.display = 'block';
+            return false;
+        }
+
+        var available = parseInt(selectedOption.dataset.available || '0', 10);
+        var requested = parseInt(qty.value || '0', 10);
+        if(requested < 1){
+            requested = 1;
+            qty.value = 1;
+        }
+
+        if(requested > available){
+            qty.classList.add('is-invalid');
+            error.textContent = 'Requested quantity cannot exceed available amount (' + available + ').';
+            error.style.display = 'block';
+            qty.value = available > 0 ? available : 1;
+            return false;
+        }
+
+        qty.classList.remove('is-invalid');
+        error.style.display = 'none';
+        return true;
+    }
+
+    function updateSummary(){
+        var list = document.getElementById('selectedList');
+        if(!list) return;
+        list.innerHTML = '';
+        var valid = true;
+
+        container.querySelectorAll('.asset-row').forEach(function(r){
+            syncQtyMax(r);
+            if(!validateRow(r)){
+                valid = false;
+            }
+            var s = r.querySelector('.asset-select');
+            var q = r.querySelector('.asset-qty');
+            if(s && s.value){
+                var name = s.options[s.selectedIndex].dataset.name || s.options[s.selectedIndex].textContent;
+                var qty = q ? q.value : '1';
+                var li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.textContent = name.replace(/\s*\(Available:.*\)$/, '');
+                var span = document.createElement('span');
+                span.textContent = 'Qty: ' + qty;
+                li.appendChild(span);
+                list.appendChild(li);
+            }
+        });
+
+        var submitBtn = document.getElementById('submitRequestBtn');
+        if(submitBtn){
+            submitBtn.disabled = !valid;
+        }
+    }
+
+    // delegated handlers for add/remove buttons so both initial and dynamic buttons work
+    container.addEventListener('click', function(e){
+        var add = e.target.closest('.add-asset-btn');
+        var rem = e.target.closest('.remove-asset-btn');
+        if(add){
+            var newRow = makeRow();
+            container.appendChild(newRow);
+            refreshSelectOptions();
+            updateSummary();
+            return;
+        }
+        if(rem){
+            var row = e.target.closest('.asset-row');
+            if(!row) return;
+            if(container.children.length > 1){
+                row.remove();
+            } else {
+                var s = row.querySelector('.asset-select'); if(s) s.selectedIndex = 0;
+                var q = row.querySelector('.asset-qty'); if(q) q.value = 1;
+            }
+            refreshSelectOptions();
+            updateSummary();
+            return;
+        }
+    });
+
+    // (no document-level fallback — use delegated handlers on the container only)
+
+    function init(){
+        var existingRows = container.querySelectorAll('.asset-row');
+        if(existingRows.length === 0){
+            container.appendChild(makeRow());
+        } else {
+            existingRows.forEach(function(r){
+                // attach validation listeners to server-rendered rows
+                attachRowEvents(r);
+            });
+        }
+        refreshSelectOptions();
+        updateSummary();
+    }
+
+    init();
+
+    var requestModal = document.getElementById('requestModal');
+    if(requestModal){
+        requestModal.addEventListener('hidden.bs.modal', function(){
+            // reset to single empty row
+            container.innerHTML = '';
+            var r = makeRow();
+            container.appendChild(r);
+            updateSummary();
+            var n = document.getElementById('requestorName'); if(n) n.value = '{{ user.get_full_name|default:user.username }}';
+            var g = document.getElementById('requestorGroup'); if(g) g.value = '';
+            var re = document.getElementById('requestReason'); if(re) re.value = '';
+        });
+    }
+});
+</script>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var table = document.getElementById('assetsTable');
+    var dt;
+    if (table) {
+        dt = new DataTable('#assetsTable', {
+            pageLength: 10,
+            order: [[0, 'asc']],
+            columnDefs: [{ orderable: false, targets: -1 }]
+        });
+    }
+
+});
+</script>
+
+<!-- Audit Log Modal -->
+<div class="modal fade" id="auditLogModal" tabindex="-1" aria-labelledby="auditLogModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="auditLogModalLabel">
+                        <i class="bi bi-clock-history"></i> Full Audit Log
+                    </h5>
+                    <div style="font-size:13px; opacity:0.85; margin-top:4px;">All asset transactions — created, edited, stock added</div>
+                </div>
+                <div class="d-flex align-items-center gap-3 ms-auto">
+                    <button type="button" id="auditExportBtn" style="background:none; border:1px solid rgba(255,255,255,0.6); color:#fff; border-radius:6px; padding:4px 12px; font-size:13px; cursor:pointer;">
+                        <i class="bi bi-download me-1"></i> Export CSV
+                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <!-- Filter Bar -->
+                <div class="audit-filter-bar">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th style="padding:0 6px 4px 0;"><label class="audit-filter-label mb-0">From Date</label></th>
+                                <th style="padding:0 6px 4px;"><label class="audit-filter-label mb-0">To Date</label></th>
+                                <th style="padding:0 0 4px 6px;"><label class="audit-filter-label mb-0">Action</label></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding:0 6px 0 0;">
+                                    <input type="date" id="auditFilterFrom" class="form-control form-control-sm">
+                                </td>
+                                <td style="padding:0 6px;">
+                                    <input type="date" id="auditFilterTo" class="form-control form-control-sm">
+                                </td>
+                                <td style="padding:0 0 0 6px; position:relative;">
+                                    <div style="position:relative;">
+                                        <button type="button" id="auditActionDropdownBtn" class="form-select form-select-sm text-start" style="cursor:pointer;">
+                                            <span id="auditActionLabel">All Actions</span>
+                                        </button>
+                                        <div id="auditActionDropdown" style="display:none; position:absolute; top:100%; left:0; z-index:9999; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.12); width:100%; padding:6px 0; margin-top:4px;">
+                                            <label style="display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; font-size:13px; white-space:nowrap; user-select:none;">
+                                                <input type="checkbox" class="audit-action-cb" value="Created" style="width:15px; height:15px; cursor:pointer; accent-color:#8a1538;"> Created
+                                            </label>
+                                            <label style="display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; font-size:13px; white-space:nowrap; user-select:none;">
+                                                <input type="checkbox" class="audit-action-cb" value="Edited" style="width:15px; height:15px; cursor:pointer; accent-color:#8a1538;"> Edited
+                                            </label>
+                                            <label style="display:flex; align-items:center; gap:10px; padding:8px 14px; cursor:pointer; font-size:13px; white-space:nowrap; user-select:none;">
+                                                <input type="checkbox" class="audit-action-cb" value="Stock Added" style="width:15px; height:15px; cursor:pointer; accent-color:#8a1538;"> Stock Added
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="auditFilterClear" style="background:none; border:none; padding:2px 0 0; font-size:12px; color:#9b1a3b; cursor:pointer; text-decoration:underline; display:block; text-align:left;">Clear</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <table id="auditModalTable" class="table table-hover table-bordered w-100">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Asset</th>
+                            <th>Action</th>
+                            <th>Performed By</th>
+                            <th>Cost / Unit</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in all_logs %}
+                        <tr>
+                            <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                            <td><strong>{{ log.asset.name }}</strong></td>
+                            <td>
+                                <span class="audit-badge
+                                    {% if log.action == 'Created' %}audit-created
+                                    {% elif log.action == 'Edited' %}audit-edited
+                                    {% else %}audit-stock{% endif %}">
+                                    {{ log.action }}
+                                </span>
+                            </td>
+                            <td>{{ log.performed_by.get_full_name|default:log.performed_by.username|default:"—" }}</td>
+                            <td>{% if log.cost_per_unit %}₱{{ log.cost_per_unit }}{% else %}<span style="color:#aaa;">—</span>{% endif %}</td>
+                            <td>{{ log.notes|default:"—" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="auditReportBtn" class="btn" style="background:#8a1538; color:#fff; font-weight:600;">
+                    <i class="bi bi-file-earmark-text me-1"></i> Generate Report
+                </button>
+                <button type="button" class="btn close-modal-btn" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Audit Report Modal -->
+<div class="modal fade" id="auditReportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius:12px; overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#8a1538,#6d102c); color:#fff; padding:18px 24px;">
+                <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Asset Transaction Report</h5>
+                <div class="d-flex align-items-center gap-2 ms-auto">
+                    <button type="button" id="auditReportPrintBtn" style="background:none; border:1px solid rgba(255,255,255,0.6); color:#fff; border-radius:6px; padding:4px 12px; font-size:13px; cursor:pointer;">
+                        <i class="bi bi-printer me-1"></i> Print
+                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="modal-body p-4" id="auditReportBody" style="background:#fff;">
+                <!-- Header -->
+                <div class="text-center mb-3">
+                    <div style="font-size:22px; font-weight:800; letter-spacing:1px;">ASSET MANAGEMENT SYSTEM</div>
+                    <div style="font-size:13px; color:#555;">Asset Transactions — Created, Edited, Stock Added</div>
+                    <div style="border-top:3px solid #8a1538; border-bottom:1px solid #8a1538; margin:8px 0; padding:4px 0; font-size:15px; font-weight:700; letter-spacing:1px;">
+                        ASSET TRANSACTION REPORT
+                    </div>
+                </div>
+                <!-- Meta info -->
+                <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:12px;">
+                    <div>
+                        <strong>Date Generated:</strong> <span id="reportDate"></span>
+                    </div>
+                    <div>
+                        <strong>Total Entries:</strong> <span id="reportCount"></span>
+                    </div>
+                </div>
+                <!-- Table -->
+                <table id="auditReportTable" style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr style="background:#8a1538; color:#fff;">
+                            <th style="border:1px solid #999; padding:7px 10px; text-align:center;">NO</th>
+                            <th style="border:1px solid #999; padding:7px 10px;">ASSET</th>
+                            <th style="border:1px solid #999; padding:7px 10px; text-align:center;">ACTION</th>
+                            <th style="border:1px solid #999; padding:7px 10px;">PERFORMED BY</th>
+                            <th style="border:1px solid #999; padding:7px 10px; text-align:right;">COST / UNIT</th>
+                            <th style="border:1px solid #999; padding:7px 10px;">NOTES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditReportTbody">
+                    </tbody>
+                </table>
+                <!-- Signatures -->
+                <div style="display:flex; justify-content:space-between; margin-top:48px; font-size:13px;">
+                    <div style="text-align:center; width:30%;">
+                        <div style="border-top:1px solid #333; padding-top:6px; font-weight:700;">Prepared By</div>
+                        <div style="color:#555; font-size:12px;">Signature over Printed Name</div>
+                    </div>
+                    <div style="text-align:center; width:30%;">
+                        <div style="border-top:1px solid #333; padding-top:6px; font-weight:700;">Verified By</div>
+                        <div style="color:#555; font-size:12px;">Signature over Printed Name</div>
+                    </div>
+                    <div style="text-align:center; width:30%;">
+                        <div style="border-top:1px solid #333; padding-top:6px; font-weight:700;">Received By</div>
+                        <div style="color:#555; font-size:12px;">Date / Time: ___________</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Stock Modal -->
+<div class="modal fade" id="addStockModal" tabindex="-1" aria-labelledby="addStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addStockModalLabel">Add Stock</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addStockForm" method="post" action="">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p id="addStockAssetName" class="mb-3" style="font-weight:700; color:#5c1025; font-size:16px;"></p>
+                    <div class="mb-3">
+                        <label class="form-label">Current Stock</label>
+                        <input type="text" id="addStockCurrent" class="form-control" readonly
+                               style="background:#f8f0f3; cursor:not-allowed;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="addStockAmount" class="form-label">Amount to Add</label>
+                        <input type="number" id="addStockAmount" name="amount" class="form-control"
+                               min="1" placeholder="Enter quantity to add" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addStockCost" class="form-label">Cost per Unit (₱) <span style="font-weight:400; color:#8b5c6b;">optional</span></label>
+                        <input type="number" id="addStockCost" name="cost" class="form-control"
+                               min="0" step="0.01" placeholder="e.g. 150.00">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn close-modal-btn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn" style="background:#005941; color:white; min-width:140px; font-weight:700;">
+                        Add Stock
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var addStockModalEl  = document.getElementById('addStockModal');
+    var addStockModal    = new bootstrap.Modal(addStockModalEl);
+    var addStockForm     = document.getElementById('addStockForm');
+    var addStockName     = document.getElementById('addStockAssetName');
+    var addStockCurrent  = document.getElementById('addStockCurrent');
+    var addStockAmount   = document.getElementById('addStockAmount');
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.add-stock-btn');
+        if (!btn) return;
+        addStockForm.action = '/assets/asset/' + btn.dataset.assetId + '/add-stock/';
+        addStockName.textContent    = btn.dataset.assetName;
+        addStockCurrent.value       = btn.dataset.assetQty + ' units';
+        addStockAmount.value        = '';
+        addStockModal.show();
+    });
+
+    addStockModalEl.addEventListener('hidden.bs.modal', function () {
+        addStockAmount.value = '';
+        var costField = document.getElementById('addStockCost');
+        if (costField) costField.value = '';
+    });
+
+    // Audit log modal — initialize DataTable once on first open
+    var auditLogModalEl   = document.getElementById('auditLogModal');
+    var auditModalDT      = null;
+    var auditRangePushed  = false;
+
+    // Date-range custom search (scoped to auditModalTable only)
+    function pushAuditDateRange() {
+        if (auditRangePushed) return;
+        $.fn.dataTable.ext.search.push(function (settings, data) {
+            if (settings.nTable.id !== 'auditModalTable') return true;
+            var from = document.getElementById('auditFilterFrom').value;
+            var to   = document.getElementById('auditFilterTo').value;
+            if (!from && !to) return true;
+            var rowDate = data[0].substring(0, 10);
+            if (from && rowDate < from) return false;
+            if (to   && rowDate > to)   return false;
+            return true;
+        });
+        auditRangePushed = true;
+    }
+
+    auditLogModalEl.addEventListener('shown.bs.modal', function () {
+        pushAuditDateRange();
+
+        if (!auditModalDT) {
+            auditModalDT = new DataTable('#auditModalTable', {
+                pageLength: 10,
+                order: [[0, 'desc']],
+                columnDefs: [{ orderable: false, targets: [5] }],
+                language: { emptyTable: 'No audit records yet.' }
+            });
+
+            // Action dropdown toggle
+            var actionDropdownBtn = document.getElementById('auditActionDropdownBtn');
+            var actionDropdown    = document.getElementById('auditActionDropdown');
+            actionDropdownBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                actionDropdown.style.display = actionDropdown.style.display === 'none' ? 'block' : 'none';
+            });
+            document.addEventListener('click', function () {
+                actionDropdown.style.display = 'none';
+            });
+            actionDropdown.addEventListener('click', function (e) { e.stopPropagation(); });
+
+            // Action checkboxes
+            document.querySelectorAll('.audit-action-cb').forEach(function (cb) {
+                cb.addEventListener('change', function () {
+                    var checked = Array.from(document.querySelectorAll('.audit-action-cb:checked')).map(function (c) { return c.value; });
+                    if (checked.length === 0) {
+                        document.getElementById('auditActionLabel').textContent = 'All Actions';
+                        auditModalDT.column(2).search('').draw();
+                    } else {
+                        document.getElementById('auditActionLabel').textContent = checked.join(', ');
+                        auditModalDT.column(2).search(checked.join('|'), true, false).draw();
+                    }
+                });
+            });
+
+            // Date range — redraw triggers the custom search function
+            document.getElementById('auditFilterFrom').addEventListener('change', function () {
+                auditModalDT.draw();
+            });
+            document.getElementById('auditFilterTo').addEventListener('change', function () {
+                auditModalDT.draw();
+            });
+
+            // Clear all filters
+            document.getElementById('auditFilterClear').addEventListener('click', function () {
+                document.getElementById('auditFilterFrom').value = '';
+                document.getElementById('auditFilterTo').value   = '';
+                document.querySelectorAll('.audit-action-cb').forEach(function (cb) { cb.checked = false; });
+                document.getElementById('auditActionLabel').textContent = 'All Actions';
+                auditModalDT.column(2).search('');
+                auditModalDT.draw();
+            });
+
+            // Generate Report
+            document.getElementById('auditReportBtn').addEventListener('click', function () {
+                var rows = [];
+                auditModalDT.rows({ search: 'applied' }).data().each(function (row) {
+                    rows.push(row);
+                });
+
+                document.getElementById('reportDate').textContent = new Date().toLocaleDateString('en-PH', { year:'numeric', month:'long', day:'numeric' });
+                document.getElementById('reportCount').textContent = rows.length;
+
+                var tbody = document.getElementById('auditReportTbody');
+                tbody.innerHTML = '';
+                rows.forEach(function (row, i) {
+                    var action = String(row[2]).replace(/<[^>]*>/g, '').trim();
+                    var tr = document.createElement('tr');
+                    tr.style.background = i % 2 === 0 ? '#fff' : '#fdf4f6';
+                    tr.innerHTML = [
+                        '<td style="border:1px solid #ccc; padding:6px 10px; text-align:center;">' + (i + 1) + '</td>',
+                        '<td style="border:1px solid #ccc; padding:6px 10px; font-weight:600;">' + String(row[1]).replace(/<[^>]*>/g,'').trim() + '</td>',
+                        '<td style="border:1px solid #ccc; padding:6px 10px; text-align:center;">' + action + '</td>',
+                        '<td style="border:1px solid #ccc; padding:6px 10px;">' + String(row[3]).replace(/<[^>]*>/g,'').trim() + '</td>',
+                        '<td style="border:1px solid #ccc; padding:6px 10px; text-align:right;">' + String(row[4]).replace(/<[^>]*>/g,'').trim() + '</td>',
+                        '<td style="border:1px solid #ccc; padding:6px 10px;">' + String(row[5]).replace(/<[^>]*>/g,'').trim() + '</td>',
+                    ].join('');
+                    tbody.appendChild(tr);
+                });
+
+                var reportModal = new bootstrap.Modal(document.getElementById('auditReportModal'));
+                reportModal.show();
+            });
+
+            // Print report
+            document.getElementById('auditReportPrintBtn').addEventListener('click', function () {
+                var content = document.getElementById('auditReportBody').innerHTML;
+                var win = window.open('', '_blank');
+                win.document.write('<html><head><title>Asset Transaction Report</title><style>body{font-family:Arial,sans-serif;margin:32px;} table{width:100%;border-collapse:collapse;font-size:13px;} th,td{border:1px solid #999;padding:7px 10px;} thead tr{background:#8a1538;color:#fff;}</style></head><body>' + content + '</body></html>');
+                win.document.close();
+                win.focus();
+                win.print();
+            });
+
+            // Export visible rows as CSV
+            document.getElementById('auditExportBtn').addEventListener('click', function () {
+                var headers = ['Timestamp', 'Asset', 'Action', 'Performed By', 'Cost / Unit', 'Notes'];
+                var rows = [headers];
+                auditModalDT.rows({ search: 'applied' }).data().each(function (row) {
+                    rows.push(row.map(function (cell) {
+                        var text = String(cell).replace(/<[^>]*>/g, '').trim();
+                        return '"' + text.replace(/"/g, '""') + '"';
+                    }));
+                });
+                var csv = rows.map(function (r) { return r.join(','); }).join('\r\n');
+                var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'audit_log.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        } else {
+            auditModalDT.columns.adjust();
+        }
+    });
+});
+</script>
 
 {% endblock %}

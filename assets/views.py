@@ -1,11 +1,26 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
+from django.contrib import messages
+from django.db import transaction
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.generic import TemplateView
-from .forms import UserRegistrationForm, UserEditForm 
-from .models import Asset, Profile
+from django.contrib.auth.views import LoginView
+from .forms import UserRegistrationForm, UserEditForm
+from .models import Asset, AssetRequest, AssetRequestItem, AssetLog, Profile
 from django.contrib.auth.mixins import PermissionRequiredMixin
+
+
+class CustomLoginView(LoginView):
+    def form_valid(self, form):
+        user = form.get_user()
+        if not user.groups.exists():
+            messages.warning(
+                self.request,
+                "Your account does not have a role assigned yet. Please contact an administrator."
+            )
+            return redirect("login")
+        return super().form_valid(form)
 
 
 def can_view_all_users(user):
@@ -49,13 +64,8 @@ def register_view(request):
 
         Profile.objects.create(user=user)
 
-        # Automatically assign Staff role
-        staff_group, created = Group.objects.get_or_create(
-            name="Staff"
-        )
-        user.groups.add(staff_group)
-
-        return redirect("assets:landing")
+        messages.success(request, "Account registered successfully! Please wait for an administrator to assign your role before you can log in.")
+        return redirect("login")
 
     return render(
         request,
@@ -80,11 +90,16 @@ def user_profile(request, user_id):
         id=user_id
     )
 
+    user_requests = AssetRequestItem.objects.filter(
+        request__created_by=user
+    ).select_related('asset')
+
     return render(
         request,
         "users/user_profile.html",
         {
-            "profile_user": user
+            "profile_user": user,
+            "requests": user_requests,
         }
     )
 
@@ -92,20 +107,22 @@ def user_profile(request, user_id):
 @login_required
 def user_list(request):
 
-    if can_view_all_users(request.user):
-        users = User.objects.all()
-        can_manage_all = True
+    if not can_view_all_users(request.user):
+        return HttpResponseForbidden(
+            "You do not have permission to view users."
+        )
 
-    else:
-        users = [request.user]
-        can_manage_all = False
+    assigned_users = User.objects.filter(groups__isnull=False).distinct()
+    new_users = User.objects.filter(groups__isnull=True)
 
     return render(
         request,
         "users/user_list.html",
         {
-            "users": users,
-            "can_manage_all": can_manage_all
+            "assigned_users": assigned_users,
+            "new_users": new_users,
+            "total_users": assigned_users.count() + new_users.count(),
+            "can_manage_all": True
         }
     )
 
@@ -129,24 +146,21 @@ def user_create(request):
 
         Profile.objects.create(user=user)
 
-        group_id = request.POST.get("group")
+        selected_groups = form.cleaned_data.get("groups")
+        if selected_groups:
+            user.groups.set(selected_groups)
 
-        if group_id:
-            group = get_object_or_404(Group, id=group_id)
-            user.groups.add(group)
-
+        messages.success(request, f"User '{user.username}' was created successfully.")
         return redirect("assets:user_list")
-
-    groups = Group.objects.all().order_by("name")
 
     return render(
         request,
         "users/user_form.html",
         {
             "form": form,
-            "groups": groups,
             "title": "Create User",
-            "can_manage_groups": True
+            "is_admin_editing": True,
+            "can_manage_groups": True,
         }
     )
 
@@ -175,7 +189,11 @@ def user_edit(request, user_id):
         )
 
         if form.is_valid():
-            form.save()
+            edited_user = form.save(commit=False)
+            edited_user.save()
+            if can_manage_groups:
+                form.save_m2m()
+            messages.success(request, f"User '{edited_user.username}' was updated successfully.")
             return redirect("assets:user_list")
 
     else:
@@ -205,7 +223,9 @@ def user_delete(request, user_id):
     user = get_object_or_404(User, id=user_id)
 
     if request.method == "POST":
+        username = user.username
         user.delete()
+        messages.success(request, f"User '{username}' was deleted successfully.")
         return redirect("assets:user_list")
 
     return render(
@@ -222,8 +242,9 @@ class IndexView(TemplateView):
 @login_required
 @permission_required("assets.view_asset", raise_exception=True)
 def asset_list(request):
-    assets = Asset.objects.all()
-    context = {"assets": assets}
+    assets   = Asset.objects.all()
+    all_logs = AssetLog.objects.select_related('asset', 'performed_by').order_by('-timestamp')
+    context  = {"assets": assets, "all_logs": all_logs}
     return render(request, "assets/order_list.html", context)
 
 # Asset Detail
@@ -231,7 +252,8 @@ def asset_list(request):
 @permission_required("assets.view_asset", raise_exception=True)
 def asset_detail(request, asset_id):
     asset = get_object_or_404(Asset, id=asset_id)
-    context = {"asset": asset}
+    logs  = asset.logs.select_related('performed_by').order_by('-timestamp')
+    context = {"asset": asset, "logs": logs}
     return render(request, "assets/order_detail.html", context)
 
 # Asset Create
@@ -249,12 +271,75 @@ def asset_create(request):
             log_details=request.POST.get("log_details", "")
         )
         asset.save()
+        AssetLog.objects.create(
+            asset=asset,
+            action=AssetLog.ACTION_CREATED,
+            performed_by=request.user,
+            cost_per_unit=asset.cost,
+            notes=f"Asset created with quantity {asset.quantity} at ₱{asset.cost} per unit."
+        )
+        messages.success(request, "Asset created successfully.")
         return redirect("assets:asset_list")
     
     context = {
         "type_choices": Asset.TYPE_CHOICES
     }
     return render(request, "assets/create_asset.html", context)
+
+# Asset Logs JSON
+@login_required
+@permission_required("assets.view_asset", raise_exception=True)
+def asset_logs_json(request, asset_id):
+    asset = get_object_or_404(Asset, id=asset_id)
+    logs  = asset.logs.select_related('performed_by').order_by('-timestamp')
+    data  = []
+    for log in logs:
+        if log.performed_by:
+            performer = log.performed_by.get_full_name() or log.performed_by.username
+        else:
+            performer = '—'
+        data.append({
+            'timestamp':    log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'action':       log.action,
+            'performed_by': performer,
+            'cost_per_unit': str(log.cost_per_unit) if log.cost_per_unit else None,
+            'notes':        log.notes or '—',
+        })
+    return JsonResponse({'asset_name': asset.name, 'logs': data})
+
+# Asset Add Stock
+@login_required
+@permission_required("assets.change_asset", raise_exception=True)
+def asset_add_stock(request, asset_id):
+    asset = get_object_or_404(Asset, id=asset_id)
+    if request.method == "POST":
+        try:
+            amount = int(request.POST.get("amount", 0))
+        except ValueError:
+            amount = 0
+        if amount > 0:
+            from decimal import Decimal, InvalidOperation
+            cost_str = request.POST.get("cost", "").strip()
+            try:
+                cost_per_unit = Decimal(cost_str) if cost_str else None
+            except InvalidOperation:
+                cost_per_unit = None
+
+            asset.quantity += amount
+            asset.save()
+
+            cost_note = f" at ₱{cost_per_unit} each" if cost_per_unit else ""
+            AssetLog.objects.create(
+                asset=asset,
+                action=AssetLog.ACTION_STOCK,
+                performed_by=request.user,
+                cost_per_unit=cost_per_unit,
+                notes=f"Added {amount} unit(s){cost_note}. New stock: {asset.quantity}."
+            )
+            messages.success(request, f"Added {amount} unit(s) to {asset.name}. New stock: {asset.quantity}.")
+        else:
+            messages.error(request, "Please enter a valid amount greater than 0.")
+    return redirect("assets:asset_list")
 
 # Asset Edit
 @login_required
@@ -263,14 +348,35 @@ def asset_edit(request, asset_id):
     asset = get_object_or_404(Asset, id=asset_id)
     
     if request.method == "POST":
-        asset.name = request.POST.get("name")
-        asset.asset_type = request.POST.get("asset_type")
-        asset.category = request.POST.get("category")
-        asset.cost = request.POST.get("cost")
-        asset.quantity = request.POST.get("quantity")
-        asset.status = request.POST.get("status")
+        old = {
+            "name": asset.name, "category": asset.category,
+            "cost": str(asset.cost), "quantity": asset.quantity,
+            "status": asset.status, "asset_type": asset.asset_type,
+        }
+        asset.name        = request.POST.get("name")
+        asset.asset_type  = request.POST.get("asset_type")
+        asset.category    = request.POST.get("category")
+        asset.cost        = request.POST.get("cost")
+        asset.quantity    = request.POST.get("quantity")
+        asset.status      = request.POST.get("status")
         asset.log_details = request.POST.get("log_details", "")
         asset.save()
+
+        changes = []
+        if old["name"]      != asset.name:             changes.append(f"Name: '{old['name']}' → '{asset.name}'")
+        if old["category"]  != asset.category:         changes.append(f"Category: '{old['category']}' → '{asset.category}'")
+        if old["cost"]      != str(asset.cost):        changes.append(f"Cost: {old['cost']} → {asset.cost}")
+        if str(old["quantity"]) != str(asset.quantity):changes.append(f"Quantity: {old['quantity']} → {asset.quantity}")
+        if old["status"]    != asset.status:           changes.append(f"Status: '{old['status']}' → '{asset.status}'")
+        if old["asset_type"]!= asset.asset_type:       changes.append(f"Type: '{old['asset_type']}' → '{asset.asset_type}'")
+
+        AssetLog.objects.create(
+            asset=asset,
+            action=AssetLog.ACTION_EDITED,
+            performed_by=request.user,
+            notes="; ".join(changes) if changes else "No fields changed."
+        )
+        messages.success(request, "Asset updated successfully.")
         return redirect("assets:asset_detail", asset_id=asset.id)
     
     context = {
@@ -278,5 +384,154 @@ def asset_edit(request, asset_id):
         "type_choices": Asset.TYPE_CHOICES
     }
     return render(request, "assets/edit_asset.html", context)
+
+
+@login_required
+@permission_required("assets.delete_asset", raise_exception=True)
+def asset_delete(request, asset_id):
+    asset = get_object_or_404(Asset, id=asset_id)
+    if request.method == "POST":
+        asset.delete()
+        messages.success(request, f"Asset '{asset.name}' deleted successfully.")
+        return redirect("assets:asset_list")
+    return render(request, "assets/delete_asset.html", {"asset": asset})
+
+
+@login_required
+@permission_required("assets.view_assetrequest", raise_exception=True)
+def request_list(request):
+    can_view_pending = request.user.has_perm("assets.view_pending_requests")
+    can_view_history = request.user.has_perm("assets.view_request_history")
+    can_approve      = request.user.has_perm("assets.approve_request")
+
+    if can_view_pending:
+        pending_qs = AssetRequest.objects.filter(status=AssetRequest.FOR_APPROVAL)
+        if not can_approve:
+            pending_qs = pending_qs.filter(created_by=request.user)
+        pending = pending_qs.prefetch_related('items__asset').order_by('-created_at')
+    else:
+        pending = AssetRequest.objects.none()
+
+    if can_view_history:
+        history_qs = AssetRequest.objects.all() if can_approve else AssetRequest.objects.filter(created_by=request.user)
+        history = history_qs.prefetch_related('items__asset').order_by('-created_at')
+    else:
+        history = AssetRequest.objects.none()
+
+    context = {
+        'requests':         pending,
+        'history':          history,
+        'can_view_pending': can_view_pending,
+        'can_view_history': can_view_history,
+        'can_approve':      can_approve,
+    }
+    return render(request, 'assets/request_list.html', context)
+
+
+@login_required
+@permission_required("assets.request_asset", raise_exception=True)
+def request_create(request):
+    if request.method == "POST":
+        # Collect basic fields
+        requestor_name = request.POST.get('requestorName') or request.POST.get('requestor_name')
+        requestor_group = request.POST.get('requestorGroup') or request.POST.get('requestor_group')
+        reason = request.POST.get('requestReason') or request.POST.get('request_reason')
+
+        with transaction.atomic():
+            ar = AssetRequest.objects.create(
+                requestor_name=requestor_name or (request.user.get_full_name() or request.user.username),
+                requestor_group=requestor_group or "",
+                reason=reason or "",
+                status=AssetRequest.FOR_APPROVAL,
+                created_by=request.user
+            )
+
+            # asset_select[] and asset_qty[] come from the modal form; use getlist
+            asset_ids = request.POST.getlist('asset_select[]') or request.POST.getlist('asset_select')
+            qtys = request.POST.getlist('asset_qty[]') or request.POST.getlist('asset_qty')
+
+            # pair and create items
+            for i, a_id in enumerate(asset_ids):
+                try:
+                    asset = Asset.objects.get(id=int(a_id))
+                except Exception:
+                    continue
+                try:
+                    q = int(qtys[i]) if i < len(qtys) and qtys[i] else 1
+                except Exception:
+                    q = 1
+                if q <= 0:
+                    q = 1
+                AssetRequestItem.objects.create(request=ar, asset=asset, quantity=q)
+
+        messages.success(request, "Your request has been submitted successfully.")
+        return redirect('assets:asset_list')
+
+    return redirect('assets:asset_list')
+
+
+@login_required
+@permission_required("assets.approve_request", raise_exception=True)
+def request_approve(request, request_id):
+    if request.method != 'POST':
+        return redirect('assets:request_list')
+
+    ar = get_object_or_404(AssetRequest, id=request_id)
+
+    if ar.status != AssetRequest.FOR_APPROVAL:
+        return redirect('assets:request_list')
+
+    insufficient_items = []
+    for it in ar.items.select_related('asset'):
+        asset = it.asset
+        if asset.quantity < it.quantity:
+            insufficient_items.append(
+                f"{asset.name} (requested {it.quantity}, available {asset.quantity})"
+            )
+
+    if insufficient_items:
+        messages.error(
+            request,
+            "Cannot approve request because the following items do not have enough stock: "
+            + ", ".join(insufficient_items)
+        )
+        return redirect('assets:request_list')
+
+    with transaction.atomic():
+        for it in ar.items.select_related('asset'):
+            asset = it.asset
+            current_qty = int(asset.quantity or 0)
+            decrement = int(it.quantity or 0)
+            asset.quantity = max(current_qty - decrement, 0)
+            asset.save()
+
+            it.approved_quantity = decrement
+            it.save()
+
+        ar.status = AssetRequest.APPROVED
+        ar.save()
+
+    messages.success(request, "Request approved and inventory updated.")
+    return redirect('assets:request_list')
+
+
+@login_required
+@permission_required("assets.approve_request", raise_exception=True)
+def request_decline(request, request_id):
+    if request.method != 'POST':
+        return redirect('assets:request_list')
+
+    ar = get_object_or_404(AssetRequest, id=request_id)
+    decline_reason = request.POST.get('decline_reason', '').strip()
+
+    if ar.status == AssetRequest.FOR_APPROVAL:
+        ar.status = AssetRequest.DECLINED
+        ar.decline_reason = decline_reason
+        ar.save()
+        messages.success(request, "Request declined." + (" Reason saved." if decline_reason else ""))
+    else:
+        messages.error(request, "Only pending requests may be declined.")
+
+    return redirect('assets:request_list')
 
 
