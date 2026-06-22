@@ -92,6 +92,28 @@
         margin-bottom: 15px;
         padding-bottom: 6px;
         border-bottom: 1px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .select-all-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        text-transform: none;
+        color: #495057;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .select-all-checkbox {
+        cursor: pointer;
+        width: 15px;
+        height: 15px;
+        margin-top: 1em;
     }
 
     /* The Grid Container - Split evenly into 4 Columns */
@@ -196,9 +218,15 @@
             {% for section_name, checkboxes in form.get_grouped_permissions.items %}
                 {% if checkboxes %}
                     <div class="permission-section">
-                        <h3 class="section-heading">{{ section_name }}</h3>
-                        
-                        <div class="permissions-grid">
+                        <h3 class="section-heading">
+                            {{ section_name }}
+                            <label class="select-all-label">
+                                <input type="checkbox" class="select-all-checkbox" data-section="{{ forloop.counter }}">
+                                Select All
+                            </label>
+                        </h3>
+
+                        <div class="permissions-grid" data-section="{{ forloop.counter }}">
                             {% for checkbox in checkboxes %}
                                 <div class="permission-item">
                                     {{ checkbox.tag }}
@@ -218,5 +246,30 @@
 
     </form>
 </div>
+
+<script>
+    document.querySelectorAll('.select-all-checkbox').forEach(function(selectAll) {
+        var section = selectAll.dataset.section;
+        var grid = document.querySelector('.permissions-grid[data-section="' + section + '"]');
+        var checkboxes = grid.querySelectorAll('input[type="checkbox"]');
+
+        function syncSelectAll() {
+            var allChecked = Array.from(checkboxes).every(function(cb) { return cb.checked; });
+            var someChecked = Array.from(checkboxes).some(function(cb) { return cb.checked; });
+            selectAll.checked = allChecked;
+            selectAll.indeterminate = someChecked && !allChecked;
+        }
+
+        syncSelectAll();
+
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(function(cb) { cb.checked = selectAll.checked; });
+        });
+
+        checkboxes.forEach(function(cb) {
+            cb.addEventListener('change', syncSelectAll);
+        });
+    });
+</script>
 
 {% endblock %}

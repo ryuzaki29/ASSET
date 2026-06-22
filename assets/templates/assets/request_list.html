@@ -3,6 +3,7 @@
 {% block title %}Pending Requests{% endblock %}
 
 {% block extra_style %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
 <style>
 
     * {
@@ -322,6 +323,9 @@
        EMPTY STATE
     ========================================= */
 
+    .stock-ok  { font-weight: 700; color: #166534; }
+    .stock-low { font-weight: 700; color: #991b1b; }
+
     .empty-state {
         text-align: center;
         padding: 40px 20px;
@@ -392,6 +396,7 @@
      PENDING REQUESTS
 ========================================= -->
 
+{% if can_view_pending %}
 <div class="table-section">
 
     <h2 class="section-title">
@@ -400,7 +405,7 @@
 
     <div class="table-responsive">
 
-        <table class="custom-table">
+        <table id="pendingTable" class="custom-table table table-hover w-100">
 
             <thead>
                 <tr>
@@ -408,6 +413,7 @@
                     <th>Requestor</th>
                     <th>Group</th>
                     <th>Items</th>
+                    <th>Stock</th>
                     <th>Reason</th>
                     <th>Created At</th>
                     <th>Actions</th>
@@ -445,6 +451,18 @@
                     </td>
 
                     <td>
+                        <ul class="item-list">
+                            {% for it in req.items.all %}
+                                <li class="{% if it.asset.quantity >= it.quantity %}stock-ok{% else %}stock-low{% endif %}">
+                                    {{ it.asset.quantity }} left
+                                </li>
+                            {% empty %}
+                                <li class="empty-item">—</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+
+                    <td>
                         <div class="reason-box">
                             {{ req.reason }}
                         </div>
@@ -458,18 +476,29 @@
 
                         <div class="action-buttons">
 
+                            {% if can_approve %}
                             <!-- APPROVE -->
-                            <form method="post"
+                            <form id="approveForm{{ req.id }}"
+                                  method="post"
                                   action="{% url 'assets:request_approve' req.id %}"
-                                  class="action-form">
-
+                                  class="action-form"
+                                  style="display:none;">
                                 {% csrf_token %}
-
-                                <button class="btn-action btn-approve">
-                                    Approve
-                                </button>
-
                             </form>
+
+                            <button type="button"
+                                    class="btn-action btn-approve"
+                                    {% if not req.has_sufficient_stock %}
+                                        disabled
+                                        title="Insufficient stock for one or more items"
+                                        style="opacity:0.45; cursor:not-allowed;"
+                                    {% else %}
+                                        data-approve-id="{{ req.id }}"
+                                        data-has-conflict="{% if req.has_earlier_pending_conflicts %}true{% else %}false{% endif %}"
+                                        data-requestor="{{ req.requestor_name|escapejs }}"
+                                    {% endif %}>
+                                Approve
+                            </button>
 
                             <!-- DECLINE -->
                             <button type="button"
@@ -478,23 +507,12 @@
                                     data-request-name="{{ req.requestor_name|escapejs }}">
                                 Decline
                             </button>
+                            {% endif %}
 
                         </div>
 
                     </td>
 
-                </tr>
-
-                {% empty %}
-
-                <tr>
-                    <td colspan="7">
-
-                        <div class="empty-state">
-                            No pending requests available.
-                        </div>
-
-                    </td>
                 </tr>
 
                 {% endfor %}
@@ -533,39 +551,22 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var declineModalEl = document.getElementById('declineModal');
-        var declineForm = document.getElementById('declineModalForm');
-        var declineRequestName = document.getElementById('declineRequestName');
-
-        var bootstrapModal = new window.bootstrap.Modal(declineModalEl);
-
-        document.querySelectorAll('.decline-open-btn').forEach(function (button) {
-            button.addEventListener('click', function () {
-                declineForm.action = button.dataset.url;
-                var name = button.dataset.requestName || 'this request';
-                declineRequestName.textContent = 'Please state why you are declining ' + name + '.';
-                declineForm.querySelector('textarea[name="decline_reason"]').value = '';
-                bootstrapModal.show();
-            });
-        });
-    });
-</script>
+{% endif %}
 
 <!-- =========================================
      REQUEST HISTORY
 ========================================= -->
 
+{% if can_view_history %}
 <div class="table-section">
 
     <h2 class="section-title">
-        Request History
+        Request Status
     </h2>
 
     <div class="table-responsive">
 
-        <table class="custom-table">
+        <table id="historyTable" class="custom-table table table-hover w-100">
 
             <thead>
                 <tr>
@@ -652,18 +653,6 @@
 
                 </tr>
 
-                {% empty %}
-
-                <tr>
-                    <td colspan="7">
-
-                        <div class="empty-state">
-                            No request history available.
-                        </div>
-
-                    </td>
-                </tr>
-
                 {% endfor %}
 
             </tbody>
@@ -673,5 +662,113 @@
     </div>
 
 </div>
+{% endif %}
+
+<!-- Approve confirmation modal (always in DOM so JS can reference it) -->
+{% if can_view_pending %}
+<div class="modal fade" id="approveConfirmModal" tabindex="-1" aria-labelledby="approveConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="approveConfirmModalLabel">Confirm Approval</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size:28px; color:#92400e; flex-shrink:0;"></i>
+                    <div>
+                        <p class="mb-2" style="font-weight:700; color:#5c1025;">Earlier request detected</p>
+                        <p id="approveConfirmMessage" class="mb-0" style="color:#4a1021;"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn close-modal-btn" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="approveConfirmBtn" class="btn btn-approve" style="min-width:140px; font-weight:700;">
+                    Approve Anyway
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    if (document.getElementById('pendingTable')) {
+        new DataTable('#pendingTable', {
+            pageLength: 10,
+            order: [[0, 'asc']],
+            columnDefs: [{ orderable: false, targets: [3, 4, 5, 7] }],
+            language: { emptyTable: "No pending requests available." }
+        });
+    }
+
+    if (document.getElementById('historyTable')) {
+        new DataTable('#historyTable', {
+            pageLength: 10,
+            order: [[6, 'desc']],
+            columnDefs: [{ orderable: false, targets: [3, 4] }],
+            language: { emptyTable: "No request history available." }
+        });
+    }
+
+    // Decline modal
+    var declineModalEl = document.getElementById('declineModal');
+    if (declineModalEl) {
+        var declineForm        = document.getElementById('declineModalForm');
+        var declineRequestName = document.getElementById('declineRequestName');
+        var declineModal       = new window.bootstrap.Modal(declineModalEl);
+
+        document.addEventListener('click', function (e) {
+            var button = e.target.closest('.decline-open-btn');
+            if (!button) return;
+            declineForm.action = button.dataset.url;
+            var name = button.dataset.requestName || 'this request';
+            declineRequestName.textContent = 'Please state why you are declining ' + name + '.';
+            declineForm.querySelector('textarea[name="decline_reason"]').value = '';
+            declineModal.show();
+        });
+    }
+
+    // Approve confirmation modal
+    var approveConfirmModalEl = document.getElementById('approveConfirmModal');
+    if (approveConfirmModalEl) {
+        var approveConfirmModal   = new window.bootstrap.Modal(approveConfirmModalEl);
+        var approveConfirmBtn     = document.getElementById('approveConfirmBtn');
+        var approveConfirmMessage = document.getElementById('approveConfirmMessage');
+
+        document.addEventListener('click', function (e) {
+            var button = e.target.closest('[data-approve-id]');
+            if (!button) return;
+
+            var id          = button.dataset.approveId;
+            var hasConflict = button.dataset.hasConflict === 'true';
+            var requestor   = button.dataset.requestor || 'this request';
+
+            if (hasConflict) {
+                approveConfirmMessage.textContent =
+                    'You are approving "' + requestor + '", but there is an earlier pending request for the same asset(s). ' +
+                    'Approving this now may reduce the stock and affect the ability to fulfill that earlier request.';
+                approveConfirmBtn.dataset.approveId = id;
+                approveConfirmModal.show();
+            } else {
+                document.getElementById('approveForm' + id).submit();
+            }
+        });
+
+        approveConfirmBtn.addEventListener('click', function () {
+            var id = this.dataset.approveId;
+            approveConfirmModal.hide();
+            document.getElementById('approveForm' + id).submit();
+        });
+    }
+
+});
+</script>
 
 {% endblock %}

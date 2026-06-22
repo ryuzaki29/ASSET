@@ -334,7 +334,7 @@
         {% endif %}
 
         <!-- Role/Designation (Only admin/superuser can change role) -->
-        {% if is_admin_editing or request.user.is_superuser %}
+        {% if is_admin_editing or can_manage_groups or request.user.is_superuser %}
             <div class="permission-section">
                 <!-- Renders the heading once for the entire group -->
                 <label class="role-label">{{ section_name|default:"ROLES" }}</label>
