@@ -5,9 +5,22 @@ from django.db import transaction
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.generic import TemplateView
-from .forms import UserRegistrationForm, UserEditForm 
+from django.contrib.auth.views import LoginView
+from .forms import UserRegistrationForm, UserEditForm
 from .models import Asset, AssetRequest, AssetRequestItem, AssetLog, Profile
 from django.contrib.auth.mixins import PermissionRequiredMixin
+
+
+class CustomLoginView(LoginView):
+    def form_valid(self, form):
+        user = form.get_user()
+        if not user.groups.exists():
+            messages.warning(
+                self.request,
+                "Your account does not have a role assigned yet. Please contact an administrator."
+            )
+            return redirect("login")
+        return super().form_valid(form)
 
 
 def can_view_all_users(user):
@@ -51,13 +64,8 @@ def register_view(request):
 
         Profile.objects.create(user=user)
 
-        # Automatically assign Staff role
-        staff_group, created = Group.objects.get_or_create(
-            name="Staff"
-        )
-        user.groups.add(staff_group)
-
-        return redirect("assets:landing")
+        messages.success(request, "Account registered successfully! Please wait for an administrator to assign your role before you can log in.")
+        return redirect("login")
 
     return render(
         request,
@@ -82,11 +90,16 @@ def user_profile(request, user_id):
         id=user_id
     )
 
+    user_requests = AssetRequestItem.objects.filter(
+        request__created_by=user
+    ).select_related('asset')
+
     return render(
         request,
         "users/user_profile.html",
         {
-            "profile_user": user
+            "profile_user": user,
+            "requests": user_requests,
         }
     )
 
@@ -94,20 +107,22 @@ def user_profile(request, user_id):
 @login_required
 def user_list(request):
 
-    if can_view_all_users(request.user):
-        users = User.objects.all()
-        can_manage_all = True
+    if not can_view_all_users(request.user):
+        return HttpResponseForbidden(
+            "You do not have permission to view users."
+        )
 
-    else:
-        users = [request.user]
-        can_manage_all = False
+    assigned_users = User.objects.filter(groups__isnull=False).distinct()
+    new_users = User.objects.filter(groups__isnull=True)
 
     return render(
         request,
         "users/user_list.html",
         {
-            "users": users,
-            "can_manage_all": can_manage_all
+            "assigned_users": assigned_users,
+            "new_users": new_users,
+            "total_users": assigned_users.count() + new_users.count(),
+            "can_manage_all": True
         }
     )
 
@@ -131,24 +146,21 @@ def user_create(request):
 
         Profile.objects.create(user=user)
 
-        group_id = request.POST.get("group")
+        selected_groups = form.cleaned_data.get("groups")
+        if selected_groups:
+            user.groups.set(selected_groups)
 
-        if group_id:
-            group = get_object_or_404(Group, id=group_id)
-            user.groups.add(group)
-
+        messages.success(request, f"User '{user.username}' was created successfully.")
         return redirect("assets:user_list")
-
-    groups = Group.objects.all().order_by("name")
 
     return render(
         request,
         "users/user_form.html",
         {
             "form": form,
-            "groups": groups,
             "title": "Create User",
-            "can_manage_groups": True
+            "is_admin_editing": True,
+            "can_manage_groups": True,
         }
     )
 
@@ -177,7 +189,11 @@ def user_edit(request, user_id):
         )
 
         if form.is_valid():
-            form.save()
+            edited_user = form.save(commit=False)
+            edited_user.save()
+            if can_manage_groups:
+                form.save_m2m()
+            messages.success(request, f"User '{edited_user.username}' was updated successfully.")
             return redirect("assets:user_list")
 
     else:
@@ -207,7 +223,9 @@ def user_delete(request, user_id):
     user = get_object_or_404(User, id=user_id)
 
     if request.method == "POST":
+        username = user.username
         user.delete()
+        messages.success(request, f"User '{username}' was deleted successfully.")
         return redirect("assets:user_list")
 
     return render(
@@ -369,18 +387,49 @@ def asset_edit(request, asset_id):
 
 
 @login_required
+@permission_required("assets.delete_asset", raise_exception=True)
+def asset_delete(request, asset_id):
+    asset = get_object_or_404(Asset, id=asset_id)
+    if request.method == "POST":
+        asset.delete()
+        messages.success(request, f"Asset '{asset.name}' deleted successfully.")
+        return redirect("assets:asset_list")
+    return render(request, "assets/delete_asset.html", {"asset": asset})
+
+
+@login_required
+@permission_required("assets.view_assetrequest", raise_exception=True)
 def request_list(request):
-    """List requests that are currently 'For Approval' and show all requests in history."""
-    pending = AssetRequest.objects.filter(status=AssetRequest.FOR_APPROVAL).prefetch_related('items__asset').order_by('-created_at')
-    history = AssetRequest.objects.prefetch_related('items__asset').order_by('-created_at')
+    can_view_pending = request.user.has_perm("assets.view_pending_requests")
+    can_view_history = request.user.has_perm("assets.view_request_history")
+    can_approve      = request.user.has_perm("assets.approve_request")
+
+    if can_view_pending:
+        pending_qs = AssetRequest.objects.filter(status=AssetRequest.FOR_APPROVAL)
+        if not can_approve:
+            pending_qs = pending_qs.filter(created_by=request.user)
+        pending = pending_qs.prefetch_related('items__asset').order_by('-created_at')
+    else:
+        pending = AssetRequest.objects.none()
+
+    if can_view_history:
+        history_qs = AssetRequest.objects.all() if can_approve else AssetRequest.objects.filter(created_by=request.user)
+        history = history_qs.prefetch_related('items__asset').order_by('-created_at')
+    else:
+        history = AssetRequest.objects.none()
+
     context = {
-        'requests': pending,
-        'history': history
+        'requests':         pending,
+        'history':          history,
+        'can_view_pending': can_view_pending,
+        'can_view_history': can_view_history,
+        'can_approve':      can_approve,
     }
     return render(request, 'assets/request_list.html', context)
 
 
 @login_required
+@permission_required("assets.request_asset", raise_exception=True)
 def request_create(request):
     if request.method == "POST":
         # Collect basic fields
@@ -422,6 +471,7 @@ def request_create(request):
 
 
 @login_required
+@permission_required("assets.approve_request", raise_exception=True)
 def request_approve(request, request_id):
     if request.method != 'POST':
         return redirect('assets:request_list')
@@ -466,6 +516,7 @@ def request_approve(request, request_id):
 
 
 @login_required
+@permission_required("assets.approve_request", raise_exception=True)
 def request_decline(request, request_id):
     if request.method != 'POST':
         return redirect('assets:request_list')

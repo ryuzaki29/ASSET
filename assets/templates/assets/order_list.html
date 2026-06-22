@@ -342,7 +342,7 @@
     .tbl-actions-wrap {
         display: flex;
         gap: 6px;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         align-items: center;
     }
 
@@ -361,8 +361,9 @@
 
     .tbl-action:hover { opacity: 0.85; }
 
-    .tbl-view  { background: #8a1538; color: white; }
-    .tbl-edit  { border: 1px solid #8a1538; color: #8a1538; background: white; }
+    .tbl-view   { background: #8a1538; color: white; }
+    .tbl-edit   { border: 1px solid #8a1538; color: #8a1538; background: white; }
+    .tbl-delete { background: #b91c1c; color: white; }
     .tbl-stock { background: #005941; color: white; }
     .tbl-audit { background: #4338ca; color: white; }
 
@@ -515,17 +516,23 @@
         </div>
 
         <div class="header-actions">
+            {% if perms.assets.audit_assets %}
             <button type="button" class="create-btn" data-bs-toggle="modal" data-bs-target="#auditLogModal">
                 <i class="bi bi-clock-history"></i> Audit Log
             </button>
+            {% endif %}
 
+            {% if perms.assets.add_asset %}
             <a href="{% url 'assets:asset_create' %}" class="create-btn">
                 + Add Asset
             </a>
+            {% endif %}
 
+            {% if perms.assets.request_asset %}
             <button type="button" class="request-btn" data-bs-toggle="modal" data-bs-target="#requestModal">
                 Request Asset
             </button>
+            {% endif %}
         </div>
 
     </div>
@@ -631,7 +638,13 @@
                     <td>
                         <div class="tbl-actions-wrap">
                             <a href="{% url 'assets:asset_detail' asset.id %}" class="tbl-action tbl-view">View</a>
+                            {% if perms.assets.change_asset %}
                             <a href="{% url 'assets:asset_edit' asset.id %}" class="tbl-action tbl-edit">Edit</a>
+                            {% endif %}
+                            {% if perms.assets.delete_asset %}
+                            <a href="{% url 'assets:asset_delete' asset.id %}" class="tbl-action tbl-delete">Delete</a>
+                            {% endif %}
+                            {% if perms.assets.change_asset %}
                             <button type="button"
                                     class="tbl-action tbl-stock add-stock-btn"
                                     data-asset-id="{{ asset.id }}"
@@ -639,6 +652,7 @@
                                     data-asset-qty="{{ asset.quantity }}">
                                 + Stock
                             </button>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

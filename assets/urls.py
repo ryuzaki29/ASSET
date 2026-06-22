@@ -8,6 +8,7 @@ urlpatterns = [
     path("", views.IndexView.as_view(), name="landing"),
     path("asset/<int:asset_id>/", views.asset_detail, name="asset_detail"),
     path("asset/<int:asset_id>/edit/", views.asset_edit, name="asset_edit"),
+    path("asset/<int:asset_id>/delete/", views.asset_delete, name="asset_delete"),
     path("asset/<int:asset_id>/add-stock/", views.asset_add_stock, name="asset_add_stock"),
     path("asset/<int:asset_id>/logs/", views.asset_logs_json, name="asset_logs_json"),
     path("create/", views.asset_create, name="asset_create"),

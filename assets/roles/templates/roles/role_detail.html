@@ -306,8 +306,12 @@
         <h1>{{ role.name }}</h1>
     </div>
     <div class="button-group">
-        <a href="{% url 'roles:role_update' role.pk %}" class="create-btn">Edit Role</a>
-        <a href="{% url 'roles:role_delete' role.pk %}" class="cancel-btn">Delete Role</a>
+        {% if perms.auth.change_group %}
+            <a href="{% url 'roles:role_update' role.pk %}" class="create-btn">Edit Role</a>
+        {% endif %}
+        {% if perms.auth.delete_group %}
+            <a href="{% url 'roles:role_delete' role.pk %}" class="cancel-btn">Delete Role</a>
+        {% endif %}
     </div>
 </div>
 
