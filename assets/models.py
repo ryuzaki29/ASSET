@@ -10,6 +10,11 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+    class Meta:
+        permissions = [
+            ("view_back_to_users", "Can View Back to Users Button"),
+        ]
     
 class Asset(models.Model):
     EQUIPMENT = "equipment"
