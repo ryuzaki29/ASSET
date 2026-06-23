@@ -50,6 +50,10 @@ def can_delete_users(user):
 def landing(request):
     return render(request, "assets/landing.html")
 
+@login_required
+def placeholder_view(request):
+    return render(request, "assets/placeholder.html")
+
 # Added Registration Form
 from django.contrib.auth.models import User, Group
 
