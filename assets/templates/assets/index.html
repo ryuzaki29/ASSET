@@ -76,8 +76,8 @@
     }
 
     .custodian-photo-button {
-        width: 200px;
-        height: 200px;
+        width: 150px;
+        height: 150px;
         border-radius: 24px;
         overflow: hidden;
         background: white;
@@ -86,7 +86,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: transform 0.5s ease, box-shadow 0.5s ease;
     }
 
     .custodian-photo-button:hover {
@@ -136,6 +136,9 @@
             <h1 class="hero-title">LISTA Dashboard</h1>
             <p style="margin: 0; opacity: 100; color: var(--brand-yellow); font-weight: bold;" >Logistics and Inventory System for Tracking  Assets</p>
         </div>
+        <div>
+            <a href="{% url 'assets:placeholder' %}" class="btn btn-green btn-block">DASHBOARD</a>
+        </div>
     </div>
 
     <div class="row">
@@ -149,12 +152,54 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-md-12">
+            <div class="content-card">
+                <div class="card-strip"></div>
+                <div class="card-body-custom">
+                    <div class="row text-start">
+                        <div class="col-6 col-md-3">
+                            <div class="p-3">
+                                <h6 class="text-muted" style="margin:0;">Total Assets</h6>
+                                <div style="font-size:24px; font-weight:700; color:var(--brand-maroon);">{{ total_assets|default:"—" }}</div>
+                                <div class="small text-success">{{ total_assets_change|default:"" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3">
+                                <h6 class="text-muted" style="margin:0;">Available Assets</h6>
+                                <div style="font-size:24px; font-weight:700; color:#28a745;">{{ available_assets|default:"—" }}</div>
+                                <div class="small text-success">{{ available_assets_change|default:"" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3">
+                                <h6 class="text-muted" style="margin:0;">Checked Out</h6>
+                                <div style="font-size:24px; font-weight:700; color:#fd7e14;">{{ checked_out|default:"—" }}</div>
+                                <div class="small text-danger">{{ checked_out_change|default:"" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="p-3">
+                                <h6 class="text-muted" style="margin:0;">Low Stock Items</h6>
+                                <div style="font-size:24px; font-weight:700; color:#6f42c1;">{{ low_stock_count|default:"—" }}</div>
+                                <div class="small text-danger">{{ low_stock_change|default:"" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
         <div class="col-md-12 col-sm-6">
             <div class="content-card text-center">
                 <div class="card-strip"></div>
                 <div class="card-body-custom">
                     <div class="module-icon"><span class="glyphicon glyphicon-exclamation-sign"></span></div>
-                    <h4 style="font-weight: bold;">LOW ON STOCK ITEMS</h4>
+                    <div class="text-center mb-2">
+                        <h4 style="font-weight: bold; margin:0;">LOW ON STOCK ITEMS</h4>
+                    </div>
                     <p class="small text-muted">Items that are running low in inventory.</p>
 
                     {% comment %} Expecting `low_stock_items` in context (iterable of Asset). If not provided, show a friendly message. {% endcomment %}
@@ -188,8 +233,19 @@
                 </div>
             </div>
         </div>
- 
-    
+
+        <div class="col-md-12 col-sm-6">
+            <div class="content-card text-center">
+                <div class="card-strip"></div>
+                <div class="card-body-custom">
+                    <div class="module-icon"><span class="glyphicon glyphicon-stats"></span></div>
+                    <h4 style="font-weight: bold;">This Month's Delivered Items</h4>
+                    <p class="small text-muted"></p>
+                    <a href="#" class="btn btn-green btn-block">View Data</a>
+                </div>
+            </div>
+        </div>
+
         <div class="col-md-12 col-sm-6">
             <div class="content-card text-center">
                 <div class="card-strip"></div>
@@ -214,20 +270,7 @@
                 </div>
             </div>
         </div>
-
         
-
-        <div class="col-md-12 col-sm-6">
-            <div class="content-card text-center">
-                <div class="card-strip"></div>
-                <div class="card-body-custom">
-                    <div class="module-icon"><span class="glyphicon glyphicon-stats"></span></div>
-                    <h4 style="font-weight: bold;">This Month's Delivered Items</h4>
-                    <p class="small text-muted"></p>
-                    <a href="#" class="btn btn-green btn-block">View Data</a>
-                </div>
-            </div>
-        </div>
     </div>
 
 </div>
