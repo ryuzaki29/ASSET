@@ -255,9 +255,11 @@
 
 {% block content %}
 
+{% if perms.assets.view_back_to_users %}
 <a href="{% url 'assets:user_list' %}" class="back-button">
     <i class="bi bi-arrow-left"></i> Back to Users
 </a>
+{% endif %}
 
 <!-- PROFILE HEADER -->
 <div class="profile-header">
