@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.contrib import messages
 from django.db import transaction
+from django.db.models.deletion import ProtectedError
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.generic import TemplateView
@@ -439,8 +440,15 @@ def asset_edit(request, asset_id):
 def asset_delete(request, asset_id):
     asset = get_object_or_404(Asset, id=asset_id)
     if request.method == "POST":
-        asset.delete()
-        messages.success(request, f"Asset '{asset.name}' deleted successfully.")
+        try:
+            asset.delete()
+            messages.success(request, f"Asset '{asset.name}' deleted successfully.")
+        except ProtectedError:
+            messages.error(
+                request,
+                f"Cannot delete '{asset.name}' because it is referenced in one or more requests. "
+                "Remove or decline those requests first before deleting this asset."
+            )
         return redirect("assets:asset_list")
     return render(request, "assets/delete_asset.html", {"asset": asset})
 
