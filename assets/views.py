@@ -556,6 +556,18 @@ def request_approve(request, request_id):
             it.approved_quantity = decrement
             it.save()
 
+            AssetLog.objects.create(
+                asset=asset,
+                action=AssetLog.ACTION_DEDUCTED,
+                performed_by=request.user,
+                notes=(
+                    f"Deducted {decrement} unit(s) for Request #{ar.id}"
+                    f" by {ar.requestor_name}"
+                    + (f" ({ar.requestor_group})" if ar.requestor_group else "")
+                    + f". Remaining stock: {asset.quantity}."
+                ),
+            )
+
         ar.status = AssetRequest.APPROVED
         ar.save()
 

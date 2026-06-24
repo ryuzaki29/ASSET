@@ -93,9 +93,10 @@ class AssetRequest(models.Model):
 
 
 class AssetLog(models.Model):
-    ACTION_CREATED = "Created"
-    ACTION_EDITED  = "Edited"
-    ACTION_STOCK   = "Stock Added"
+    ACTION_CREATED  = "Created"
+    ACTION_EDITED   = "Edited"
+    ACTION_STOCK    = "Stock Added"
+    ACTION_DEDUCTED = "Stock Deducted"
 
     asset         = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name='logs')
     action        = models.CharField(max_length=50)
