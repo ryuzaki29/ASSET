@@ -4,7 +4,9 @@
 {% block title %}{{ profile_user.first_name }} {{ profile_user.last_name }} - User Profile{% endblock %}
 
 {% block extra_style %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
 <style>
+    
     * {
         box-sizing: border-box;
     }
@@ -250,6 +252,48 @@
     .btn-secondary-custom:hover {
         background: #e5d5cc;
     }
+    .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background: #f8f9fa;
+    color: #6b0f28;
+    font-weight: 700;
+    border-bottom: 2px solid #dee2e6;
+}
+
+
+.table thead th {
+    background: #faf5f0;
+    color: #6b0f28;
+    font-weight: 700;
+    border-bottom: 2px solid #e5d5cc;
+}
+
+.table tbody tr:hover {
+    background: #faf5f0;
+}
+
+#requestsTable thead th {
+    background-color: #8a1538 !important;
+    color: white !important;
+    border-color: #6d102c !important;
+}
+.dataTables_wrapper .page-item.active .page-link {
+    background-color: #8a1538;
+    border-color: #8a1538;
+}
+
+.dataTables_wrapper .page-link {
+    color: #8a1538;
+}
 </style>
 {% endblock %}
 
@@ -307,22 +351,98 @@
     <h2>
         <i class="bi bi-box-seam"></i> Inventory Requests
     </h2>
-    
+
+
     {% if requests %}
-        <div class="requests-grid">
-            {% for request in requests %}
-                <div class="request-card">
-                    <div class="request-name">{{ request.asset.name }}</div>
-                    <div class="request-qty"><i class="bi bi-collection"></i> Quantity: {{ request.quantity }}</div>
-                </div>
-            {% endfor %}
-        </div>
+
+    <div class="table-responsive">
+        <table id="requestsTable" class="table table-hover table-bordered align-middle w-100">
+            <thead>
+                <tr>
+                    <th>Asset</th>
+                    <th>Quantity</th>
+                    <th>Date Requested</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for request in requests %}
+                <tr>
+                    <td>{{ request.asset.name }}</td>
+
+                    <td>{{ request.quantity }}</td>
+
+                    <td>
+                        {{ request.request.created_at|date:"M d, Y h:i A" }}
+                    </td>
+
+                    <td>
+                        {% if request.request.status == "Approved" %}
+                            <span class="badge bg-success">
+                                Approved
+                            </span>
+
+                        {% elif request.request.status == "Declined" %}
+                            <span class="badge bg-danger">
+                                Declined
+                            </span>
+
+                        {% else %}
+                            <span class="badge bg-warning text-dark">
+                                For Approval
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if request.request.decline_reason %}
+                            {{ request.request.decline_reason }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+
     {% else %}
         <div class="empty-state">
             <i class="bi bi-inbox"></i>
-            <p>No inventory requests yet</p>
+            <p>No inventory requests found.</p>
         </div>
     {% endif %}
 </div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    if (document.getElementById('requestsTable')) {
+
+        new DataTable('#requestsTable', {
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            order: [[2, 'desc']],
+            initComplete: function () {
+                this.api().table().header().querySelectorAll('th').forEach(function(th) {
+                    th.style.setProperty('background-color', '#8a1538', 'important');
+                    th.style.setProperty('color', 'white', 'important');
+                    th.style.setProperty('border-color', '#6d102c', 'important');
+                });
+            }
+        });
+
+    }
+
+});
+</script>
 {% endblock %}
