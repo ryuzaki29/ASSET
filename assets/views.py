@@ -9,6 +9,8 @@ from django.contrib.auth.views import LoginView
 from .forms import UserRegistrationForm, UserEditForm
 from .models import Asset, AssetRequest, AssetRequestItem, AssetLog, Profile
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 
 class CustomLoginView(LoginView):
@@ -96,7 +98,25 @@ def user_profile(request, user_id):
 
     user_requests = AssetRequestItem.objects.filter(
         request__created_by=user
-    ).select_related('asset')
+    ).select_related(
+        'asset',
+        'request'
+    )
+
+    search = request.GET.get('search', '').strip()
+
+    if search:
+        user_requests = user_requests.filter(
+            asset__name__icontains=search
+        )
+
+    user_requests = user_requests.order_by(
+        '-request__created_at'
+    )
+
+    paginator = Paginator(user_requests, 10)
+    page_number = request.GET.get('page')
+    user_requests = paginator.get_page(page_number)
 
     return render(
         request,
@@ -104,6 +124,7 @@ def user_profile(request, user_id):
         {
             "profile_user": user,
             "requests": user_requests,
+            "search": search,
         }
     )
 
