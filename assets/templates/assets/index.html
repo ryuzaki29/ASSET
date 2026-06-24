@@ -162,28 +162,24 @@
                             <div class="p-3">
                                 <h6 class="text-muted" style="margin:0;">Total Assets</h6>
                                 <div style="font-size:24px; font-weight:700; color:var(--brand-maroon);">{{ total_assets|default:"—" }}</div>
-                                <div class="small text-success">{{ total_assets_change|default:"" }}</div>
                             </div>
                         </div>
                         <div class="col-6 col-md-3">
                             <div class="p-3">
                                 <h6 class="text-muted" style="margin:0;">Available Assets</h6>
                                 <div style="font-size:24px; font-weight:700; color:#28a745;">{{ available_assets|default:"—" }}</div>
-                                <div class="small text-success">{{ available_assets_change|default:"" }}</div>
                             </div>
                         </div>
                         <div class="col-6 col-md-3">
                             <div class="p-3">
                                 <h6 class="text-muted" style="margin:0;">Checked Out</h6>
                                 <div style="font-size:24px; font-weight:700; color:#fd7e14;">{{ checked_out|default:"—" }}</div>
-                                <div class="small text-danger">{{ checked_out_change|default:"" }}</div>
                             </div>
                         </div>
                         <div class="col-6 col-md-3">
                             <div class="p-3">
                                 <h6 class="text-muted" style="margin:0;">Low Stock Items</h6>
-                                <div style="font-size:24px; font-weight:700; color:#6f42c1;">{{ low_stock_count|default:"—" }}</div>
-                                <div class="small text-danger">{{ low_stock_change|default:"" }}</div>
+                                <div style="font-size:24px; font-weight:700; color:#6f42c1;">{{ low_stock|default:"—" }}</div>
                             </div>
                         </div>
                     </div>
@@ -191,87 +187,75 @@
             </div>
         </div>
     </div>
-
-        <div class="col-md-12 col-sm-6">
-            <div class="content-card text-center">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="content-card">
                 <div class="card-strip"></div>
                 <div class="card-body-custom">
-                    <div class="module-icon"><span class="glyphicon glyphicon-exclamation-sign"></span></div>
-                    <div class="text-center mb-2">
+                    <div class="module-icon text-center"><span class="glyphicon glyphicon-exclamation-sign"></span></div>
+                    <div class="text-center mb-3">
                         <h4 style="font-weight: bold; margin:0;">LOW ON STOCK ITEMS</h4>
                     </div>
-                    <p class="small text-muted">Items that are running low in inventory.</p>
-
-                    {% comment %} Expecting `low_stock_items` in context (iterable of Asset). If not provided, show a friendly message. {% endcomment %}
+                    <p class="small text-muted text-center">Items that are running low in inventory.</p>
+        
                     {% if low_stock_items %}
-                        <div class="table-responsive mt-3">
-                            <table class="table table-sm table-striped text-start">
-                                <thead>
-                                    <tr>
-                                        <th>Item</th>
-                                        <th>Category</th>
-                                        <th>Quantity</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in low_stock_items %}
-                                    <tr>
-                                        <td>{{ item.name }}</td>
-                                        <td>{{ item.category }}</td>
-                                        <td>{{ item.quantity }}</td>
-                                        <td class="text-end"><a href="{% url 'assets:asset_detail' item.id %}" class="btn btn-sm btn-maroon">View</a></td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                    <table class="table table-bordered table-hover">
+                        <thead style="background-color: var(--brand-maroon); color: white;">
+                            <tr>
+                                <th>Asset Type</th>
+                                <th>Asset Name</th>
+                                <th>Quantity Left</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asset in low_stock_items %}
+                            <tr>
+                                <td>{{ asset.get_asset_type_display }}</td>
+                                <td>{{ asset.name }}</td>
+                                <td><span class="badge bg-danger">{{ asset.quantity }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                     {% else %}
-                        <div class="mt-3 text-muted">No low stock items to show.</div>
+                    <p class="text-center text-muted">No low stock items.</p>
                     {% endif %}
-
                 </div>
             </div>
         </div>
 
-        <div class="col-md-12 col-sm-6">
-            <div class="content-card text-center">
-                <div class="card-strip"></div>
-                <div class="card-body-custom">
-                    <div class="module-icon"><span class="glyphicon glyphicon-stats"></span></div>
-                    <h4 style="font-weight: bold;">This Month's Delivered Items</h4>
-                    <p class="small text-muted"></p>
-                    <a href="#" class="btn btn-green btn-block">View Data</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-12 col-sm-6">
+        <div class="col-md-12">
             <div class="content-card text-center">
                 <div class="card-strip"></div>
                 <div class="card-body-custom">
                     <div class="module-icon"><span class="glyphicon glyphicon-shopping-cart"></span></div>
                     <h4 style="font-weight: bold;">VIDAL TAN HALL CUSTODIANS</h4>
-                    <div class="custodian-photo-grid">
-                        <div class="custodian-photo-button">
-                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80" alt="Rosalie" class="custodian-photo">
-                        </div>
-                        <div class="custodian-photo-button">
-                            <img src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=80" alt="Vincent" class="custodian-photo">
-                        </div>
-                        <div class="custodian-photo-button">
-                            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80" alt="Benedict" class="custodian-photo">
+                    <div class="container col-lg-8 my-5">
+                        <div class="row g-4">
+                            <div class="col-12 col-md-4 text-center">
+                                <div class="custodian-photo-button">
+                                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80" alt="Rosalie" class="custodian-photo">
+                                </div>
+                                <button type="button" class="btn btn-green w-100">Rosalie M. Lazarte</button>
+                            </div>
+                            <div class="col-12 col-md-4 text-center">
+                                <div class="custodian-photo-button">
+                                    <img src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=80" alt="Vincent" class="custodian-photo">
+                                </div>
+                                <button type="button" class="btn btn-green w-100">Vincent Merioles</button>
+                            </div>
+                            <div class="col-12 col-md-4 text-center">
+                                <div class="custodian-photo-button">
+                                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80" alt="Benedict" class="custodian-photo">
+                                </div>
+                                <button type="button" class="btn btn-green w-100">Benedict Z. Caligayan</button>
+                            </div>
                         </div>
                     </div>
-                
-                    <a href="#" class="btn btn-green btn-block">Rosalie M. Lazarte</a>
-                    <a href="#" class="btn btn-green btn-block">Vincent Merioles</a>
-                    <a href="#" class="btn btn-green btn-block">Benedict Z. Caligayan</a>
                 </div>
             </div>
         </div>
-        
-    </div>
+    </div> {# closes the bottom row #}
 
-</div>
+</div> {# closes the container #}
 {% endblock %}
