@@ -583,7 +583,7 @@ def request_decline(request, request_id):
     return redirect('assets:request_list')
 
 @login_required
-@permission_required("assets.view_asset", raise_exception=True)
+@permission_required("assets.view_dashboard", raise_exception=True)
 def dashboard(request):
     """Overview of the inventory health, value, and request activity."""
 

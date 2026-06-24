@@ -89,10 +89,16 @@
                     </a>
 
                     {% if user.is_authenticated %}
-                        {% if perms.assets.view_asset %}
+                        {% if perms.assets.view_dashboard %}
                             <a class="" href="{% url 'assets:dashboard' %}">
                                 Dashboard
                             </a>
+                            <a class="" href="{% url 'assets:asset_list' %}">
+                                Assets
+                            </a>
+                        {% endif %}
+
+                        {% if perms.assets.view_asset %}
                             <a class="" href="{% url 'assets:asset_list' %}">
                                 Assets
                             </a>

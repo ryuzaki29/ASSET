@@ -12,6 +12,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='asset',
-            options={'permissions': [('audit_assets', 'Can Audit Assets'), ('request_asset', 'Can Request Asset'), ('approve_request', 'Can Approve Request')], 'verbose_name': 'Asset', 'verbose_name_plural': 'Assets'},
+            options={'permissions': [('audit_assets', 'Can Audit Assets'), ('request_asset', 'Can Request Asset'), ('approve_request', 'Can Approve Request'),('view_dashboard', 'Can View Dashboard')], 'verbose_name': 'Asset', 'verbose_name_plural': 'Assets'},
         ),
     ]

@@ -18,6 +18,7 @@ ROLE_PERMISSIONS = {
         "change_asset",
         "delete_asset",
         "audit_assets",
+        "view_dashboard",
         # Request Management
         "view_assetrequest",
         "view_pending_requests",
@@ -36,6 +37,7 @@ ROLE_PERMISSIONS = {
     "Executive": [
         # Asset Management
         "view_asset",
+        "view_dashboard",
         # Request Management
         "view_assetrequest",
         "view_pending_requests",
