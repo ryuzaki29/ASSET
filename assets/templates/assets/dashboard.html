@@ -1,0 +1,598 @@
+{% extends "assets/base.html" %}
+{% load static %}
+
+{% block title %}LISTA | Dashboard{% endblock %}
+
+{% block extra_style %}
+<style>
+    :root {
+        --brand-maroon: #801533;
+        --brand-maroon-dark: #620D26;
+        --brand-green: #005941;
+        --brand-yellow: #ffc720;
+        --brand-orange: #fd7e14;
+        --brand-purple: #6f42c1;
+        --light-bg: #e9ecef;
+        --muted: #6c757d;
+    }
+
+    main {
+        background-color: var(--light-bg);
+        padding-top: 30px;
+        min-height: 90vh;
+    }
+
+    .pill-header {
+        background-color: var(--brand-maroon);
+        color: white;
+        padding: 20px 40px;
+        border-radius: 20px;
+        margin-bottom: 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .hero-title { font-weight: 700; margin: 0; font-size: 28px; }
+    .hero-sub   { margin: 0; color: var(--brand-yellow); font-weight: 700; }
+
+    /* KPI cards */
+    .stat-card {
+        background: #fff;
+        border-radius: 15px;
+        border: 1px solid #ddd;
+        overflow: hidden;
+        height: 100%;
+    }
+    .stat-card .card-strip { height: 8px; background: var(--brand-maroon); }
+    .stat-body { padding: 18px 22px; }
+    .stat-label {
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        font-size: .72rem;
+        font-weight: 700;
+        color: var(--muted);
+        margin: 0;
+    }
+    .stat-value { font-size: 28px; font-weight: 800; line-height: 1.1; margin: 6px 0 2px; }
+
+    /* Per-type stat grid (Equipment / Consumable) */
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .mini-stat {
+        background: #fafafa;
+        border: 1px solid #eee;
+        border-radius: 10px;
+        padding: 12px 14px;
+    }
+    .mini-label {
+        font-size: .68rem;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        font-weight: 700;
+        color: var(--muted);
+        margin: 0;
+    }
+    .mini-value { font-size: 21px; font-weight: 800; line-height: 1.1; margin-top: 4px; }
+    .type-accent-eq { border-top: 4px solid var(--brand-maroon); }
+    .type-accent-co { border-top: 4px solid var(--brand-green); }
+    .type-badge {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 700;
+    }
+    .type-badge-eq { background: #f3d9e1; color: var(--brand-maroon); }
+    .type-badge-co { background: #cfe9e1; color: var(--brand-green); }
+    .stat-meta  { font-size: .8rem; color: var(--muted); margin: 0; }
+    .stat-icon  { font-size: 22px; opacity: .85; }
+
+    .strip-green  { background: var(--brand-green) !important; }
+    .strip-yellow { background: var(--brand-yellow) !important; }
+    .strip-orange { background: var(--brand-orange) !important; }
+
+    /* Generic content panel */
+    .panel {
+        background: #fff;
+        border-radius: 15px;
+        border: 1px solid #ddd;
+        overflow: hidden;
+        height: 100%;
+    }
+    .panel-head {
+        padding: 16px 22px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .panel-title { margin: 0; font-weight: 700; font-size: 1.05rem; color: var(--brand-maroon); }
+    .panel-body { padding: 18px 22px; }
+
+    .btn-maroon { background-color: var(--brand-maroon); color: #fff; border-radius: 6px; }
+    .btn-maroon:hover { background-color: var(--brand-maroon-dark); color: #fff; }
+    .btn-green  { background-color: var(--brand-green); color: #fff; border-radius: 6px; }
+    .btn-green:hover { opacity: .9; color: #fff; }
+
+    .chart-wrap { position: relative; height: 260px; }
+
+    .pill {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: .75rem;
+        font-weight: 700;
+    }
+    .pill-danger  { background: #f8d7da; color: #842029; }
+    .pill-warning { background: #fff3cd; color: #664d03; }
+    .pill-success { background: #d1e7dd; color: #0f5132; }
+    .pill-muted   { background: #e2e3e5; color: #41464b; }
+
+    .feed-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+    .feed-item:last-child { border-bottom: 0; }
+    .feed-action { font-weight: 700; color: var(--brand-maroon); }
+    .feed-time   { font-size: .78rem; color: var(--muted); }
+
+    .table thead th {
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        color: var(--muted);
+    }
+    .empty-state { color: var(--muted); padding: 24px; text-align: center; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+            <div>{{ message }}</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Header -->
+    <div class="pill-header">
+        <div>
+            <h1 class="hero-title">Dashboard</h1>
+            <p class="hero-sub">Real-time inventory health and request activity</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'assets:asset_list' %}" class="btn btn-green">Manage assets</a>
+            <a href="{% url 'home' %}" class="btn btn-light">Back to home</a>
+        </div>
+    </div>
+
+    <!-- Overall summary -->
+    <div class="row g-3 mb-1">
+        <div class="col-12 col-lg-4">
+            <div class="stat-card">
+                <div class="card-strip"></div>
+                <div class="stat-body">
+                    <p class="stat-label">Total Assets</p>
+                    <div class="stat-value" style="color: var(--brand-maroon);">{{ total_assets }}</div>
+                    <p class="stat-meta">{{ equipment_count }} equipment &middot; {{ consumable_count }} consumable</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-4">
+            <div class="stat-card">
+                <div class="card-strip strip-yellow"></div>
+                <div class="stat-body">
+                    <p class="stat-label">Total Inventory Value</p>
+                    <div class="stat-value" style="color: #b8860b;">&#8369;{{ total_value_display }}</div>
+                    <p class="stat-meta">{{ total_units_display }} units on hand</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-4">
+            <div class="stat-card">
+                <div class="card-strip strip-orange"></div>
+                <div class="stat-body">
+                    <p class="stat-label">Pending Requests</p>
+                    <div class="stat-value" style="color: var(--brand-orange);">{{ pending_count }}</div>
+                    <p class="stat-meta">{{ approved_count }} approved &middot; {{ declined_count }} declined</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics by type: Equipment vs Consumable -->
+    <div class="row g-3 mt-1 mb-1">
+        <div class="col-12 col-lg-6">
+            <div class="panel type-accent-eq">
+                <div class="panel-head">
+                    <h2 class="panel-title">Equipment</h2>
+                    <div class="d-flex gap-2">
+                        <span class="pill pill-warning">{{ equipment_stats.low_stock }} low</span>
+                        <span class="pill pill-danger">{{ equipment_stats.out_of_stock }} out</span>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="type-grid">
+                        <div class="mini-stat">
+                            <p class="mini-label">Asset Types</p>
+                            <div class="mini-value" style="color: var(--brand-maroon);">{{ equipment_stats.count }}</div>
+                        </div>
+                        <div class="mini-stat">
+                            <p class="mini-label">Inventory Value</p>
+                            <div class="mini-value" style="color: #b8860b;">&#8369;{{ equipment_stats.value_display }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="panel type-accent-co">
+                <div class="panel-head">
+                    <h2 class="panel-title" style="color: var(--brand-green);">Consumables</h2>
+                    <div class="d-flex gap-2">
+                        <span class="pill pill-warning">{{ consumable_stats.low_stock }} low</span>
+                        <span class="pill pill-danger">{{ consumable_stats.out_of_stock }} out</span>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="type-grid">
+                        <div class="mini-stat">
+                            <p class="mini-label">Asset Types</p>
+                            <div class="mini-value" style="color: var(--brand-green);">{{ consumable_stats.count }}</div>
+                        </div>
+                        <div class="mini-stat">
+                            <p class="mini-label">Inventory Value</p>
+                            <div class="mini-value" style="color: #b8860b;">&#8369;{{ consumable_stats.value_display }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-3 mt-1 mb-1">
+        <div class="col-12 col-lg-6">
+            <div class="panel">
+                <div class="panel-head">
+                    <h2 class="panel-title">Inventory value by category</h2>
+                </div>
+                <div class="panel-body">
+                    {% if category_table %}
+                        <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+                    {% else %}
+                        <div class="empty-state">No assets recorded yet.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="panel">
+                <div class="panel-head"><h2 class="panel-title">Value by type</h2></div>
+                <div class="panel-body">
+                    {% if total_assets %}
+                        <div class="chart-wrap"><canvas id="typeChart"></canvas></div>
+                    {% else %}
+                        <div class="empty-state">No data.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="panel">
+                <div class="panel-head"><h2 class="panel-title">Requests</h2></div>
+                <div class="panel-body">
+                    {% if total_requests %}
+                        <div class="chart-wrap"><canvas id="requestChart"></canvas></div>
+                    {% else %}
+                        <div class="empty-state">No requests yet.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Needs attention + Recent activity -->
+    <div class="row g-3 mt-1 mb-1">
+        <div class="col-12 col-lg-7">
+            <div class="panel">
+                <div class="panel-head">
+                    <h2 class="panel-title">Needs attention</h2>
+                    <div class="d-flex gap-2">
+                        <span class="pill pill-warning">{{ low_stock_count }} low</span>
+                        <span class="pill pill-danger">{{ out_of_stock_count }} out</span>
+                    </div>
+                </div>
+                <div class="panel-body p-0">
+                    {% if low_stock_items or out_of_stock_items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Item</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th class="text-end">Qty</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-4"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in out_of_stock_items %}
+                                <tr>
+                                    <td class="ps-4 fw-semibold">{{ item.name }}</td>
+                                    <td>
+                                        <span class="type-badge {% if item.asset_type == 'equipment' %}type-badge-eq{% else %}type-badge-co{% endif %}">{{ item.get_asset_type_display }}</span>
+                                    </td>
+                                    <td>{{ item.category }}</td>
+                                    <td class="text-end">{{ item.quantity }}</td>
+                                    <td><span class="pill pill-danger">Out of stock</span></td>
+                                    <td class="text-end pe-4">
+                                        <a href="{% url 'assets:asset_detail' item.id %}" class="btn btn-sm btn-maroon">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% for item in low_stock_items %}
+                                <tr>
+                                    <td class="ps-4 fw-semibold">{{ item.name }}</td>
+                                    <td>
+                                        <span class="type-badge {% if item.asset_type == 'equipment' %}type-badge-eq{% else %}type-badge-co{% endif %}">{{ item.get_asset_type_display }}</span>
+                                    </td>
+                                    <td>{{ item.category }}</td>
+                                    <td class="text-end">{{ item.quantity }}</td>
+                                    <td><span class="pill pill-warning">Low stock</span></td>
+                                    <td class="text-end pe-4">
+                                        <a href="{% url 'assets:asset_detail' item.id %}" class="btn btn-sm btn-maroon">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="panel-body pt-2">
+                        <small class="text-muted">Low stock = {{ equipment_low_threshold }} or fewer for equipment, {{ consumable_low_threshold }} or fewer for consumables.</small>
+                    </div>
+                    {% else %}
+                        <div class="empty-state">Everything is well stocked. No equipment at or below {{ equipment_low_threshold }} units, and no consumables at or below {{ consumable_low_threshold }}.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-5">
+            <div class="panel">
+                <div class="panel-head">
+                    <h2 class="panel-title">Recent activity</h2>
+                    <a href="{% url 'assets:asset_list' %}" class="text-decoration-none small">View all</a>
+                </div>
+                <div class="panel-body">
+                    {% if recent_logs %}
+                        {% for log in recent_logs %}
+                        <div class="feed-item">
+                            <div class="d-flex justify-content-between">
+                                <span class="feed-action">{{ log.action }}</span>
+                                <span class="feed-time">{{ log.timestamp|date:"M j, Y g:i A" }}</span>
+                            </div>
+                            <div>{{ log.asset.name }}</div>
+                            <div class="feed-time">
+                                by {{ log.performed_by.get_full_name|default:log.performed_by.username|default:"—" }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">No activity recorded yet.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent requests -->
+    <div class="row g-3 mt-1 mb-2">
+        <div class="col-12">
+            <div class="panel">
+                <div class="panel-head">
+                    <h2 class="panel-title">Recent requests</h2>
+                    <a href="{% url 'assets:request_list' %}" class="text-decoration-none small">View all requests</a>
+                </div>
+                <div class="panel-body p-0">
+                    {% if recent_requests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Requestor</th>
+                                    <th>Group</th>
+                                    <th>Items</th>
+                                    <th>Status</th>
+                                    <th class="pe-4">Submitted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in recent_requests %}
+                                <tr>
+                                    <td class="ps-4 fw-semibold">{{ req.requestor_name }}</td>
+                                    <td>{{ req.requestor_group|default:"—" }}</td>
+                                    <td>
+                                        {% for item in req.items.all %}
+                                            {{ item.quantity }}&times; {{ item.asset.name }}{% if not forloop.last %}, {% endif %}
+                                        {% empty %}—{% endfor %}
+                                    </td>
+                                    <td>
+                                        {% if req.status == "Approved" %}
+                                            <span class="pill pill-success">Approved</span>
+                                        {% elif req.status == "Declined" %}
+                                            <span class="pill pill-danger">Declined</span>
+                                        {% else %}
+                                            <span class="pill pill-warning">For Approval</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="pe-4">{{ req.created_at|date:"M j, Y g:i A" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <div class="empty-state">No requests submitted yet.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{{ chart_data|json_script:"chart-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    if (typeof Chart === "undefined") return;
+    var data = JSON.parse(document.getElementById("chart-data").textContent);
+
+    var MAROON = "#801533",
+        GREEN  = "#005941",
+        YELLOW = "#ffc720",
+        ORANGE = "#fd7e14",
+        PURPLE = "#6f42c1",
+        SLATE  = "#6c757d";
+
+    Chart.defaults.font.family = "'Source Sans 3', sans-serif";
+    Chart.defaults.color = "#495057";
+
+    var peso = function (v) {
+        return "\u20B1" + Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 });
+    };
+
+    // Inventory value by category (horizontal bar)
+    var catEl = document.getElementById("categoryChart");
+    if (catEl && data.category.labels.length) {
+        new Chart(catEl, {
+            type: "bar",
+            data: {
+                labels: data.category.labels,
+                datasets: [{
+                    label: "Value",
+                    data: data.category.values,
+                    backgroundColor: MAROON,
+                    borderRadius: 6,
+                    maxBarThickness: 34
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: function (c) { return peso(c.parsed.x); } } }
+                },
+                scales: {
+                    x: { ticks: { callback: function (v) { return peso(v); } }, grid: { color: "#eee" } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // Inventory value: equipment vs consumable (doughnut)
+    var typeEl = document.getElementById("typeChart");
+    if (typeEl) {
+        new Chart(typeEl, {
+            type: "doughnut",
+            data: {
+                labels: data.type_value.labels,
+                datasets: [{ data: data.type_value.values, backgroundColor: [MAROON, GREEN], borderWidth: 0 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "62%",
+                plugins: {
+                    legend: { position: "bottom", labels: { boxWidth: 12 } },
+                    tooltip: { callbacks: { label: function (c) { return c.label + ": " + peso(c.parsed); } } }
+                }
+            }
+        });
+    }
+
+    // Requests by status (doughnut)
+    var reqEl = document.getElementById("requestChart");
+    if (reqEl) {
+        new Chart(reqEl, {
+            type: "doughnut",
+            data: {
+                labels: data.requests.labels,
+                datasets: [{ data: data.requests.counts, backgroundColor: [ORANGE, GREEN, MAROON], borderWidth: 0 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "62%",
+                plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } } }
+            }
+        });
+    }
+
+    // Usage vs. stock for low-stock items, filterable by asset
+    var usageEl = document.getElementById("usageChart");
+    var usageData = data.low_stock_usage || [];
+    var usageChart = null;
+
+    function drawUsage(items) {
+        if (!usageEl) return;
+        if (usageChart) { usageChart.destroy(); }
+        usageChart = new Chart(usageEl, {
+            type: "bar",
+            data: {
+                labels: items.map(function (i) { return i.name; }),
+                datasets: [
+                    {
+                        label: "Issued (usage)",
+                        data: items.map(function (i) { return i.usage; }),
+                        backgroundColor: ORANGE,
+                        borderRadius: 6,
+                        maxBarThickness: 46
+                    },
+                    {
+                        label: "On hand (stock)",
+                        data: items.map(function (i) { return i.stock; }),
+                        backgroundColor: GREEN,
+                        borderRadius: 6,
+                        maxBarThickness: 46
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: "#eee" }, ticks: { precision: 0 } }
+                },
+                plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } } }
+            }
+        });
+    }
+
+    var filterEl = document.getElementById("lowStockFilter");
+    if (filterEl) {
+        filterEl.addEventListener("change", function () {
+            if (this.value === "__all__") {
+                drawUsage(usageData);
+            } else {
+                var pick = this.value;
+                drawUsage(usageData.filter(function (i) { return String(i.id) === pick; }));
+            }
+        });
+    }
+    drawUsage(usageData);
+})();
+</script>
+{% endblock %}

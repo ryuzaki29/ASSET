@@ -137,8 +137,11 @@
             <p style="margin: 0; opacity: 100; color: var(--brand-yellow); font-weight: bold;" >Logistics and Inventory System for Tracking  Assets</p>
         </div>
         <div>
-            <a href="{% url 'assets:placeholder' %}" class="btn btn-green btn-block">DASHBOARD</a>
-        </div>
+            {% if user.is_authenticated and perms.assets.view_asset %}
+                <a href="{% url 'assets:dashboard' %}" class="btn btn-green btn-block">DASHBOARD</a>
+            {% elif not user.is_authenticated %}
+                <a href="{% url 'login' %}" class="btn btn-green btn-block">LOG IN</a>
+            {% endif %}        </div>
     </div>
 
     <div class="row">
