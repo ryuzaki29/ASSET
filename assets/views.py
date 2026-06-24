@@ -9,7 +9,11 @@ from django.contrib.auth.views import LoginView
 from .forms import UserRegistrationForm, UserEditForm
 from .models import Asset, AssetRequest, AssetRequestItem, AssetLog, Profile
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.paginator import Paginator
+from django.db.models import Q
 
+from django.db.models import Sum, Count, F, DecimalField, ExpressionWrapper, Q
+from decimal import Decimal
 
 class CustomLoginView(LoginView):
     def form_valid(self, form):
@@ -96,7 +100,25 @@ def user_profile(request, user_id):
 
     user_requests = AssetRequestItem.objects.filter(
         request__created_by=user
-    ).select_related('asset')
+    ).select_related(
+        'asset',
+        'request'
+    )
+
+    search = request.GET.get('search', '').strip()
+
+    if search:
+        user_requests = user_requests.filter(
+            asset__name__icontains=search
+        )
+
+    user_requests = user_requests.order_by(
+        '-request__created_at'
+    )
+
+    paginator = Paginator(user_requests, 10)
+    page_number = request.GET.get('page')
+    user_requests = paginator.get_page(page_number)
 
     return render(
         request,
@@ -104,6 +126,7 @@ def user_profile(request, user_id):
         {
             "profile_user": user,
             "requests": user_requests,
+            "search": search,
         }
     )
 
@@ -241,6 +264,27 @@ def user_delete(request, user_id):
 
 class IndexView(TemplateView):
     template_name = "assets/index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        checked_out = AssetRequestItem.objects.filter(
+            request__status=AssetRequest.APPROVED
+        ).aggregate(
+            total=Sum('approved_quantity')
+        )['total'] or 0
+
+        low_stock_items = Asset.objects.filter(
+            Q(asset_type=Asset.CONSUMABLE, quantity__lte=10) |
+            Q(asset_type=Asset.EQUIPMENT, quantity__lte=3)
+        )
+
+        context['total_assets']     = Asset.objects.count()
+        context['available_assets'] = Asset.objects.filter(status="Available").count()
+        context['checked_out']      = checked_out
+        context['low_stock']        = low_stock_items.count()
+        context['low_stock_items']  = low_stock_items
+        return context
 
 # Asset Views
 @login_required
@@ -538,4 +582,165 @@ def request_decline(request, request_id):
 
     return redirect('assets:request_list')
 
+@login_required
+@permission_required("assets.view_asset", raise_exception=True)
+def dashboard(request):
+    """Overview of the inventory health, value, and request activity."""
+
+    # Per-type "low stock" thresholds (at or below this, but above zero).
+    EQUIPMENT_LOW_THRESHOLD = 3
+    CONSUMABLE_LOW_THRESHOLD = 10
+
+    # cost * quantity, evaluated in the database for the value rollups.
+    value_expr = ExpressionWrapper(
+        F("cost") * F("quantity"),
+        output_field=DecimalField(max_digits=18, decimal_places=2),
+    )
+
+    assets = Asset.objects.all()
+
+    totals = assets.aggregate(
+        total_assets=Count("id"),
+        total_units=Sum("quantity"),
+        total_value=Sum(value_expr),
+    )
+    total_assets = totals["total_assets"] or 0
+    total_units = totals["total_units"] or 0
+    total_value = totals["total_value"] or Decimal("0")
+
+    # Low stock uses a different threshold per asset type.
+    low_stock_q = (
+        Q(asset_type=Asset.EQUIPMENT, quantity__gt=0, quantity__lte=EQUIPMENT_LOW_THRESHOLD)
+        | Q(asset_type=Asset.CONSUMABLE, quantity__gt=0, quantity__lte=CONSUMABLE_LOW_THRESHOLD)
+    )
+    low_stock_items = assets.filter(low_stock_q).order_by("quantity", "name")
+    out_of_stock_items = assets.filter(quantity=0).order_by("name")
+    low_stock_count = low_stock_items.count()
+    out_of_stock_count = out_of_stock_items.count()
+
+    # Per-type statistics (Equipment vs Consumable).
+    def type_stats(type_qs, threshold):
+        agg = type_qs.aggregate(count=Count("id"), value=Sum(value_expr))
+        value = agg["value"] or Decimal("0")
+        low = type_qs.filter(quantity__gt=0, quantity__lte=threshold).count()
+        out = type_qs.filter(quantity=0).count()
+        return {
+            "count": agg["count"] or 0,
+            "value": value,
+            "value_display": f"{value:,.2f}",
+            "low_stock": low,
+            "out_of_stock": out,
+            "attention": low + out,
+            "threshold": threshold,
+        }
+
+    equipment_stats = type_stats(
+        assets.filter(asset_type=Asset.EQUIPMENT), EQUIPMENT_LOW_THRESHOLD
+    )
+    consumable_stats = type_stats(
+        assets.filter(asset_type=Asset.CONSUMABLE), CONSUMABLE_LOW_THRESHOLD
+    )
+    equipment_count = equipment_stats["count"]
+    consumable_count = consumable_stats["count"]
+
+    # Units issued out per asset (approved request items) = "usage".
+    usage_rows = (
+        AssetRequestItem.objects
+        .filter(request__status=AssetRequest.APPROVED)
+        .values("asset_id")
+        .annotate(used=Sum("approved_quantity"))
+    )
+    usage_by_asset = {r["asset_id"]: int(r["used"] or 0) for r in usage_rows}
+
+    # Usage vs. current stock for every low-stock item (drives the filterable graph).
+    low_stock_usage = [
+        {
+            "id": a.id,
+            "name": a.name,
+            "type": a.get_asset_type_display(),
+            "usage": usage_by_asset.get(a.id, 0),
+            "stock": a.quantity,
+        }
+        for a in low_stock_items
+    ]
+
+    # Requests
+    requests_qs = AssetRequest.objects.all()
+    pending_count = requests_qs.filter(status=AssetRequest.FOR_APPROVAL).count()
+    approved_count = requests_qs.filter(status=AssetRequest.APPROVED).count()
+    declined_count = requests_qs.filter(status=AssetRequest.DECLINED).count()
+    total_requests = requests_qs.count()
+
+    recent_requests = (
+        requests_qs.prefetch_related("items__asset").order_by("-created_at")[:5]
+    )
+    recent_logs = (
+        AssetLog.objects.select_related("asset", "performed_by")
+        .order_by("-timestamp")[:8]
+    )
+
+    # Inventory grouped by category (used for both the chart and the table)
+    category_rows = (
+        assets.values("category")
+        .annotate(count=Count("id"), units=Sum("quantity"), value=Sum(value_expr))
+        .order_by("-value")
+    )
+    category_table = [
+        {
+            "category": row["category"] or "Uncategorized",
+            "count": row["count"],
+            "units": row["units"] or 0,
+            "value": row["value"] or Decimal("0"),
+            "value_display": f"{(row['value'] or 0):,.2f}",
+        }
+        for row in category_rows
+    ]
+
+    # JSON-safe payload for the Chart.js visualizations
+    chart_data = {
+        "category": {
+            "labels": [c["category"] for c in category_table],
+            "values": [float(c["value"]) for c in category_table],
+        },
+        "type_value": {
+            "labels": ["Equipment", "Consumable"],
+            "values": [
+                float(equipment_stats["value"]),
+                float(consumable_stats["value"]),
+            ],
+        },
+        "requests": {
+            "labels": ["For Approval", "Approved", "Declined"],
+            "counts": [pending_count, approved_count, declined_count],
+        },
+        "low_stock_usage": low_stock_usage,
+    }
+
+    context = {
+        "total_assets": total_assets,
+        "total_units": total_units,
+        "total_units_display": f"{total_units:,}",
+        "total_value": total_value,
+        "total_value_display": f"{total_value:,.2f}",
+        "equipment_count": equipment_count,
+        "consumable_count": consumable_count,
+        "equipment_stats": equipment_stats,
+        "consumable_stats": consumable_stats,
+        "low_stock_count": low_stock_count,
+        "out_of_stock_count": out_of_stock_count,
+        "low_stock_items": low_stock_items,
+        "out_of_stock_items": out_of_stock_items,
+        "pending_count": pending_count,
+        "approved_count": approved_count,
+        "declined_count": declined_count,
+        "total_requests": total_requests,
+        "recent_requests": recent_requests,
+        "recent_logs": recent_logs,
+        "category_table": category_table,
+        "equipment_low_threshold": EQUIPMENT_LOW_THRESHOLD,
+        "consumable_low_threshold": CONSUMABLE_LOW_THRESHOLD,
+        "low_stock_usage": low_stock_usage,
+        "chart_data": chart_data,
+    }
+    return render(request, "assets/dashboard.html", context)
 

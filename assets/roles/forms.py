@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 
-from assets.models import Asset, AssetRequest
+from assets.models import Asset, AssetRequest, Profile
 
 User = get_user_model()
 
@@ -35,6 +35,7 @@ class GroupForm(forms.ModelForm):
         asset_ct = ContentType.objects.get_for_model(Asset)
         asset_request_ct = ContentType.objects.get_for_model(AssetRequest)
         group_ct = ContentType.objects.get_for_model(Group)
+        profile_ct = ContentType.objects.get_for_model(Profile)
 
         self.fields["permissions"].queryset = Permission.objects.filter(
             Q(content_type=asset_ct) |
@@ -42,7 +43,8 @@ class GroupForm(forms.ModelForm):
                 "view_assetrequest", "view_pending_requests", "view_request_history"
             ]) |
             Q(content_type=user_ct) |
-            Q(content_type=group_ct)
+            Q(content_type=group_ct) |
+            Q(content_type=profile_ct, codename='view_back_to_users')
         ).order_by("content_type__model", "codename")
 
     def get_grouped_permissions(self):
@@ -50,6 +52,7 @@ class GroupForm(forms.ModelForm):
         asset_ct = ContentType.objects.get_for_model(Asset)
         asset_request_ct = ContentType.objects.get_for_model(AssetRequest)
         group_ct = ContentType.objects.get_for_model(Group)
+        profile_ct = ContentType.objects.get_for_model(Profile)
 
         # approve_request is defined on Asset model but belongs under Request Management
         asset_ids = set(
@@ -63,7 +66,12 @@ class GroupForm(forms.ModelForm):
                 Q(content_type=asset_ct, codename='approve_request')
             ).values_list('id', flat=True)
         )
-        user_ids = set(Permission.objects.filter(content_type=user_ct).values_list('id', flat=True))
+        user_ids = set(
+            Permission.objects.filter(
+                Q(content_type=user_ct) |
+                Q(content_type=profile_ct, codename='view_back_to_users')
+            ).values_list('id', flat=True)
+        )
         group_ids = set(Permission.objects.filter(content_type=group_ct).values_list('id', flat=True))
 
         asset_widgets = []
