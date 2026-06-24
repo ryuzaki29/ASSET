@@ -90,6 +90,9 @@
 
                     {% if user.is_authenticated %}
                         {% if perms.assets.view_asset %}
+                            <a class="" href="{% url 'assets:dashboard' %}">
+                                Dashboard
+                            </a>
                             <a class="" href="{% url 'assets:asset_list' %}">
                                 Assets
                             </a>

@@ -7,6 +7,7 @@ django.setup()
 import seed_roles
 import seed_users
 import seed_assets
+import seed_requests
 
 print("=== Seeding Roles ===")
 seed_roles.main()
@@ -16,3 +17,6 @@ seed_users.main()
 
 print("\n=== Seeding Assets ===")
 seed_assets.main()
+
+print("\n=== Seeding Assets ===")
+seed_requests.main()
