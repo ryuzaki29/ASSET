@@ -667,6 +667,22 @@
 document.addEventListener('DOMContentLoaded', function(){
     var container = document.getElementById('assetRows');
 
+    // Cache options once from the server-rendered select so makeRow() always has them,
+    // even after the container is cleared on modal reset.
+    var assetOptions = [];
+    var firstSelect = container.querySelector('.asset-select');
+    if (firstSelect) {
+        firstSelect.querySelectorAll('option').forEach(function(opt) {
+            if (!opt.value) return;
+            assetOptions.push({
+                value: opt.value,
+                text: opt.textContent,
+                name: opt.dataset.name,
+                available: opt.dataset.available
+            });
+        });
+    }
+
     function attachRowEvents(row){
         var select = row.querySelector('.asset-select');
         var qty = row.querySelector('.asset-qty');
@@ -700,19 +716,14 @@ document.addEventListener('DOMContentLoaded', function(){
         defaultOpt.disabled = true;
         defaultOpt.textContent = 'Select asset';
         select.appendChild(defaultOpt);
-        // populate options from a template copy
-        var template = document.querySelector('#assetRows .asset-select');
-        if(template){
-            template.querySelectorAll('option').forEach(function(opt){
-                if(opt.value === '') return;
-                var o = document.createElement('option');
-                o.value = opt.value;
-                o.textContent = opt.textContent;
-                o.dataset.name = opt.dataset.name;
-                o.dataset.available = opt.dataset.available;
-                select.appendChild(o);
-            });
-        }
+        assetOptions.forEach(function(opt) {
+            var o = document.createElement('option');
+            o.value = opt.value;
+            o.textContent = opt.text;
+            o.dataset.name = opt.name;
+            o.dataset.available = opt.available;
+            select.appendChild(o);
+        });
 
         var qty = document.createElement('input');
         qty.type = 'number';
