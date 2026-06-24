@@ -265,6 +265,27 @@ def user_delete(request, user_id):
 class IndexView(TemplateView):
     template_name = "assets/index.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        checked_out = AssetRequestItem.objects.filter(
+            request__status=AssetRequest.APPROVED
+        ).aggregate(
+            total=Sum('approved_quantity')
+        )['total'] or 0
+
+        low_stock_items = Asset.objects.filter(
+            Q(asset_type=Asset.CONSUMABLE, quantity__lte=10) |
+            Q(asset_type=Asset.EQUIPMENT, quantity__lte=3)
+        )
+
+        context['total_assets']     = Asset.objects.count()
+        context['available_assets'] = Asset.objects.filter(status="Available").count()
+        context['checked_out']      = checked_out
+        context['low_stock']        = low_stock_items.count()
+        context['low_stock_items']  = low_stock_items
+        return context
+
 # Asset Views
 @login_required
 @permission_required("assets.view_asset", raise_exception=True)

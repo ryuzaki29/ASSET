@@ -6,6 +6,7 @@ app_name = "assets"
 
 urlpatterns = [
     path("", views.IndexView.as_view(), name="landing"),
+    path("home/", views.IndexView.as_view(), name="home"),
     path("asset/<int:asset_id>/", views.asset_detail, name="asset_detail"),
     path("asset/<int:asset_id>/edit/", views.asset_edit, name="asset_edit"),
     path("asset/<int:asset_id>/delete/", views.asset_delete, name="asset_delete"),
